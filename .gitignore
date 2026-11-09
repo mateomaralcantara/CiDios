@@ -1,0 +1,14 @@
+node_modules/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+.env
+.env.local
+apps/web/e2e/shots/
+supabase/.temp/

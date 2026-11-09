@@ -1,0 +1,33 @@
+{
+  "licenses": [
+    {"code": "CC-BY-4.0", "name": "Creative Commons Atribución 4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "allows_display": true, "allows_excerpt": true, "allows_full_text": true, "allows_derivatives": true, "requires_attribution": true},
+    {"code": "PUBLIC-DOMAIN", "name": "Dominio público", "url": null, "allows_display": true, "allows_excerpt": true, "allows_full_text": true, "allows_derivatives": true, "requires_attribution": false},
+    {"code": "CITATION-ONLY", "name": "Obra protegida — solo referencia bibliográfica y citas breves", "url": null, "allows_display": true, "allows_excerpt": true, "allows_full_text": false, "allows_derivatives": false, "requires_attribution": true},
+    {"code": "NO-EXCERPT", "name": "Acceso restringido — no se almacenan extractos", "url": null, "allows_display": false, "allows_excerpt": false, "allows_full_text": false, "allows_derivatives": false, "requires_attribution": true},
+    {"code": "USER-PRIVATE", "name": "Documento aportado por un usuario (uso privado)", "url": null, "allows_display": true, "allows_excerpt": true, "allows_full_text": true, "allows_derivatives": false, "requires_attribution": true}
+  ],
+  "references": [
+    {"slug": "tov-2012", "ref_type": "book", "authors": ["Emanuel Tov"], "title": "Textual Criticism of the Hebrew Bible", "edition": "3.ª ed. revisada y ampliada", "publisher": "Fortress Press", "year": 2012, "language": "en"},
+    {"slug": "metzger-ehrman-2005", "ref_type": "book", "authors": ["Bruce M. Metzger", "Bart D. Ehrman"], "title": "The Text of the New Testament: Its Transmission, Corruption, and Restoration", "edition": "4.ª ed.", "publisher": "Oxford University Press", "year": 2005, "language": "en"},
+    {"slug": "vanderkam-2010", "ref_type": "book", "authors": ["James C. VanderKam"], "title": "The Dead Sea Scrolls Today", "edition": "2.ª ed.", "publisher": "Eerdmans", "year": 2010, "language": "en"},
+    {"slug": "barkay-et-al-2004", "ref_type": "article", "authors": ["Gabriel Barkay", "Andrew G. Vaughn", "Marilyn J. Lundberg", "Bruce Zuckerman"], "title": "The Amulets from Ketef Hinnom: A New Edition and Evaluation", "container_title": "Bulletin of the American Schools of Oriental Research 334", "year": 2004, "language": "en"},
+    {"slug": "nongbri-2005", "ref_type": "article", "authors": ["Brent Nongbri"], "title": "The Use and Abuse of P52: Papyrological Pitfalls in the Dating of the Fourth Gospel", "container_title": "Harvard Theological Review 98", "year": 2005, "language": "en"},
+    {"slug": "jobes-silva-2015", "ref_type": "book", "authors": ["Karen H. Jobes", "Moisés Silva"], "title": "Invitation to the Septuagint", "edition": "2.ª ed.", "publisher": "Baker Academic", "year": 2015, "language": "en"},
+    {"slug": "parker-2010", "ref_type": "book", "authors": ["D. C. Parker"], "title": "Codex Sinaiticus: The Story of the World's Oldest Bible", "publisher": "British Library", "year": 2010, "language": "en"},
+    {"slug": "codex-sinaiticus-project", "ref_type": "website", "authors": ["British Library", "Universitätsbibliothek Leipzig", "Monasterio de Santa Catalina", "Biblioteca Nacional de Rusia"], "title": "Codex Sinaiticus Project", "identifiers": {"url": "https://codexsinaiticus.org"}, "year": 2009, "language": "en"},
+    {"slug": "leon-levy-dss", "ref_type": "website", "authors": ["Israel Antiquities Authority"], "title": "The Leon Levy Dead Sea Scrolls Digital Library", "identifiers": {"url": "https://www.deadseascrolls.org.il"}, "language": "en"},
+    {"slug": "ntvmr", "ref_type": "website", "authors": ["Institut für Neutestamentliche Textforschung"], "title": "New Testament Virtual Manuscript Room", "identifiers": {"url": "https://ntvmr.uni-muenster.de"}, "language": "en"},
+    {"slug": "na28-2012", "ref_type": "edition", "authors": ["Eberhard Nestle", "Erwin Nestle", "Barbara Aland", "Kurt Aland"], "title": "Novum Testamentum Graece", "edition": "28.ª ed. revisada", "publisher": "Deutsche Bibelgesellschaft", "year": 2012, "language": "grc"},
+    {"slug": "bhs", "ref_type": "edition", "authors": ["Karl Elliger", "Wilhelm Rudolph"], "title": "Biblia Hebraica Stuttgartensia", "publisher": "Deutsche Bibelgesellschaft", "year": 1977, "language": "he"},
+    {"slug": "aland-aland-1989", "ref_type": "book", "authors": ["Kurt Aland", "Barbara Aland"], "title": "The Text of the New Testament", "edition": "2.ª ed., trad. Erroll F. Rhodes", "publisher": "Eerdmans", "year": 1989, "language": "en"},
+    {"slug": "freedman-1998", "ref_type": "edition", "authors": ["David Noel Freedman (ed.)"], "title": "The Leningrad Codex: A Facsimile Edition", "publisher": "Eerdmans", "year": 1998, "language": "he"},
+    {"slug": "de-hamel-2001", "ref_type": "book", "authors": ["Christopher de Hamel"], "title": "The Book: A History of the Bible", "publisher": "Phaidon", "year": 2001, "language": "en"}
+  ],
+  "documents": [
+    {"slug": "nota-testimonios-antiguos", "file": "documents/d1_testimonios_antiguos.md", "title": "Testimonios antiguos de la Biblia hebrea", "cites": ["barkay-et-al-2004", "tov-2012", "jobes-silva-2015"]},
+    {"slug": "nota-mar-muerto", "file": "documents/d2_mar_muerto.md", "title": "Los manuscritos del mar Muerto", "cites": ["vanderkam-2010", "tov-2012", "leon-levy-dss"]},
+    {"slug": "nota-papiros-codices", "file": "documents/d3_papiros_codices.md", "title": "Papiros y códices del Nuevo Testamento", "cites": ["metzger-ehrman-2005", "nongbri-2005", "parker-2010", "codex-sinaiticus-project", "aland-aland-1989", "ntvmr"]},
+    {"slug": "nota-vulgata-masora", "file": "documents/d4_vulgata_masora.md", "title": "La Vulgata y la tradición masorética", "cites": ["tov-2012", "freedman-1998", "de-hamel-2001"]},
+    {"slug": "nota-imprenta-ediciones", "file": "documents/d5_imprenta_ediciones.md", "title": "De la imprenta a las ediciones críticas", "cites": ["metzger-ehrman-2005", "de-hamel-2001", "bhs", "na28-2012", "tov-2012"]}
+  ]
+}

@@ -1,0 +1,479 @@
+{
+  "$defs": {
+    "ArticleSection": {
+      "additionalProperties": false,
+      "properties": {
+        "heading": {
+          "title": "Heading",
+          "type": "string"
+        },
+        "intro": {
+          "default": "",
+          "title": "Intro",
+          "type": "string"
+        },
+        "claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Claim Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "heading",
+        "claim_ids"
+      ],
+      "title": "ArticleSection",
+      "type": "object"
+    },
+    "Illustration": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "alt": {
+          "title": "Alt",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "kind",
+        "alt",
+        "provenance"
+      ],
+      "title": "Illustration",
+      "type": "object"
+    },
+    "MapPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "lat": {
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "title": "Lon",
+          "type": "number"
+        },
+        "claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Claim Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "lat",
+        "lon",
+        "claim_ids"
+      ],
+      "title": "MapPoint",
+      "type": "object"
+    },
+    "MapSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "schematic",
+          "default": "schematic",
+          "title": "Kind",
+          "type": "string"
+        },
+        "notice": {
+          "title": "Notice",
+          "type": "string"
+        },
+        "bounds": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Bounds",
+          "type": "object"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/MapPoint"
+          },
+          "title": "Points",
+          "type": "array"
+        }
+      },
+      "required": [
+        "notice",
+        "bounds",
+        "points"
+      ],
+      "title": "MapSpec",
+      "type": "object"
+    },
+    "Mission": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "objective": {
+          "title": "Objective",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/Question"
+          },
+          "minItems": 1,
+          "title": "Questions",
+          "type": "array"
+        },
+        "pass_threshold": {
+          "default": 0.5,
+          "title": "Pass Threshold",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "objective",
+        "questions"
+      ],
+      "title": "Mission",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "creator": {
+          "title": "Creator",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "schematic_illustration",
+            "photograph",
+            "facsimile",
+            "map",
+            "reconstruction"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "license": {
+          "title": "License",
+          "type": "string"
+        },
+        "is_reconstruction": {
+          "title": "Is Reconstruction",
+          "type": "boolean"
+        },
+        "notice": {
+          "title": "Notice",
+          "type": "string"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        }
+      },
+      "required": [
+        "creator",
+        "kind",
+        "license",
+        "is_reconstruction",
+        "notice"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "dating",
+            "place",
+            "epistemic_category",
+            "evidence"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "prompt": {
+          "title": "Prompt",
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Options",
+          "type": "array"
+        },
+        "correct_index": {
+          "title": "Correct Index",
+          "type": "integer"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "claim_id",
+        "kind",
+        "prompt",
+        "options",
+        "correct_index",
+        "explanation"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "Stage": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "index": {
+          "title": "Index",
+          "type": "integer"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "range_label": {
+          "title": "Range Label",
+          "type": "string"
+        },
+        "intro": {
+          "title": "Intro",
+          "type": "string"
+        },
+        "event_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Event Claim Ids",
+          "type": "array"
+        },
+        "mission": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mission"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "index",
+        "title",
+        "range_label",
+        "intro",
+        "event_claim_ids"
+      ],
+      "title": "Stage",
+      "type": "object"
+    },
+    "TimelineEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "sort_key": {
+          "title": "Sort Key",
+          "type": "number"
+        },
+        "date_label": {
+          "title": "Date Label",
+          "type": "string"
+        },
+        "precision": {
+          "title": "Precision",
+          "type": "string"
+        },
+        "stage_id": {
+          "title": "Stage Id",
+          "type": "string"
+        },
+        "narration": {
+          "title": "Narration",
+          "type": "string"
+        },
+        "illustration": {
+          "$ref": "#/$defs/Illustration"
+        },
+        "place_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Place Name"
+        }
+      },
+      "required": [
+        "claim_id",
+        "title",
+        "sort_key",
+        "date_label",
+        "precision",
+        "stage_id",
+        "narration",
+        "illustration"
+      ],
+      "title": "TimelineEvent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "spec_version": {
+      "default": "1.0.0",
+      "title": "Spec Version",
+      "type": "string"
+    },
+    "modality": {
+      "enum": [
+        "article",
+        "comparison_matrix",
+        "timeline",
+        "gamified_timeline"
+      ],
+      "title": "Modality",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "language": {
+      "default": "es",
+      "title": "Language",
+      "type": "string"
+    },
+    "packet_sha256": {
+      "title": "Packet Sha256",
+      "type": "string"
+    },
+    "gamified": {
+      "default": false,
+      "title": "Gamified",
+      "type": "boolean"
+    },
+    "academic_mode_available": {
+      "default": true,
+      "title": "Academic Mode Available",
+      "type": "boolean"
+    },
+    "narration": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Narration",
+      "type": "object"
+    },
+    "stages": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Stage"
+      },
+      "title": "Stages",
+      "type": "array"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/TimelineEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "map": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MapSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "sections": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArticleSection"
+      },
+      "title": "Sections",
+      "type": "array"
+    },
+    "notices": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Notices",
+      "type": "array"
+    }
+  },
+  "required": [
+    "modality",
+    "title",
+    "packet_sha256"
+  ],
+  "title": "ExperienceSpec",
+  "type": "object",
+  "$id": "https://cienciadedios.org/contracts/experience-spec/1.0.0",
+  "x-version": "1.0.0"
+}

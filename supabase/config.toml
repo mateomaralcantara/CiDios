@@ -1,0 +1,18 @@
+# Configuración de Supabase CLI para el proyecto independiente "ciencia-de-dios".
+project_id = "ciencia-de-dios"
+
+[api]
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 16
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+enable_signup = true
+
+[auth.email]
+enable_confirmations = true

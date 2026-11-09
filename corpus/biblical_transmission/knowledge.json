@@ -1,0 +1,292 @@
+{
+  "topic": "biblia-manuscritos-critica-textual",
+  "places": [
+    {"slug": "jerusalen", "name": "Jerusalén", "lat": 31.778, "lon": 35.235},
+    {"slug": "qumran", "name": "Qumrán (mar Muerto)", "lat": 31.741, "lon": 35.459},
+    {"slug": "alejandria", "name": "Alejandría", "lat": 31.200, "lon": 29.918},
+    {"slug": "egipto", "name": "Egipto (procedencia exacta desconocida)", "lat": 27.0, "lon": 30.8},
+    {"slug": "sinai", "name": "Monasterio de Santa Catalina (Sinaí)", "lat": 28.556, "lon": 33.976},
+    {"slug": "roma", "name": "Roma / Ciudad del Vaticano", "lat": 41.904, "lon": 12.453},
+    {"slug": "belen", "name": "Belén", "lat": 31.705, "lon": 35.200},
+    {"slug": "tiberiades", "name": "Tiberíades", "lat": 32.794, "lon": 35.531},
+    {"slug": "alepo", "name": "Alepo", "lat": 36.202, "lon": 37.134},
+    {"slug": "el-cairo", "name": "El Cairo", "lat": 30.044, "lon": 31.236},
+    {"slug": "maguncia", "name": "Maguncia", "lat": 49.993, "lon": 8.247},
+    {"slug": "alcala", "name": "Alcalá de Henares", "lat": 40.482, "lon": -3.364},
+    {"slug": "basilea", "name": "Basilea", "lat": 47.559, "lon": 7.588},
+    {"slug": "venecia", "name": "Venecia", "lat": 45.440, "lon": 12.316},
+    {"slug": "leiden", "name": "Leiden", "lat": 52.160, "lon": 4.497},
+    {"slug": "cambridge", "name": "Cambridge", "lat": 52.205, "lon": 0.119},
+    {"slug": "londres", "name": "Londres", "lat": 51.507, "lon": -0.128},
+    {"slug": "stuttgart", "name": "Stuttgart", "lat": 48.776, "lon": 9.183},
+    {"slug": "munster", "name": "Münster", "lat": 51.961, "lon": 7.626}
+  ],
+  "claims": [
+    {"slug": "ketef-hinnom", "title": "Amuletos de Ketef Hinnom", "illustration": "amulet", "place": "jerusalen",
+     "statement": "Los amuletos de plata de Ketef Hinnom contienen una forma de la bendición sacerdotal (Números 6:24-26) y se datan a finales del siglo VII o comienzos del VI a. e. c.",
+     "asserted_by": "Barkay et al. (reedición de 2004)", "discipline": "Arqueología y epigrafía", "category": "scholarly_consensus",
+     "date_start": -625, "date_end": -575, "date_precision": "range", "date_label": "fines s. VII – inicios s. VI a. e. c.",
+     "consensus_note": "La datación de finales de la Edad del Hierro es la defendida por la reedición de 2004 y la más aceptada.",
+     "insufficient_evidence_note": "Los amuletos no son una copia de un libro bíblico; no permiten inferir la forma completa del libro de Números en esa época.",
+     "future_research_note": "Nuevas técnicas de imagen o hallazgos comparables podrían precisar la datación.",
+     "evidence": [
+       {"doc": "nota-testimonios-antiguos", "stance": "supports", "ref": "barkay-et-al-2004", "fragment": "Los amuletos contienen una forma de la bendición sacerdotal conocida por Números 6:24-26."},
+       {"doc": "nota-testimonios-antiguos", "stance": "supports", "ref": "barkay-et-al-2004", "fragment": "dató los amuletos a finales del siglo VII o comienzos del siglo VI a. e. c."},
+       {"doc": "nota-testimonios-antiguos", "stance": "challenges", "ref": "barkay-et-al-2004", "fragment": "Algunos investigadores habían propuesto antes una datación posterior, en época helenística"},
+       {"doc": "nota-testimonios-antiguos", "stance": "qualifies", "ref": null, "fragment": "Los amuletos no son un manuscrito bíblico: son objetos de uso personal que reproducen una fórmula también presente en el texto bíblico."}
+     ],
+     "perspectives": [
+       {"label": "Datación de finales de la Edad del Hierro", "tradition": "académica", "held_by": "Barkay, Vaughn, Lundberg, Zuckerman (2004)", "summary": "Paleografía y contexto arqueológico sitúan los amuletos hacia 600 a. e. c."},
+       {"label": "Datación posterior (helenística)", "tradition": "académica (minoritaria)", "held_by": "Propuestas anteriores a 2004", "summary": "Se propuso una fecha más tardía; la reedición de 2004 respondió a esas propuestas."}
+     ]},
+    {"slug": "septuaginta-pentateuco", "title": "Traducción griega del Pentateuco (Septuaginta)", "illustration": "scroll", "place": "alejandria",
+     "statement": "El Pentateuco se tradujo al griego en Alejandría, probablemente en el siglo III a. e. c.; el resto de libros se tradujo gradualmente en los dos siglos siguientes.",
+     "asserted_by": "Consenso de los estudios septuagintistas", "discipline": "Filología e historia del judaísmo helenístico", "category": "scholarly_consensus",
+     "date_start": -300, "date_end": -201, "date_precision": "century", "date_label": "s. III a. e. c. (probable)",
+     "consensus_note": "Amplio acuerdo sobre el origen alejandrino del Pentateuco griego en el siglo III a. e. c.",
+     "insufficient_evidence_note": "El relato de la Carta de Aristeas no puede tomarse como crónica histórica literal.",
+     "future_research_note": "Nuevos papiros griegos tempranos podrían precisar la cronología de los libros no pentatéuquicos.",
+     "evidence": [
+       {"doc": "nota-testimonios-antiguos", "stance": "supports", "ref": "jobes-silva-2015", "fragment": "se realizó en Alejandría, probablemente durante el siglo III a. e. c."},
+       {"doc": "nota-testimonios-antiguos", "stance": "qualifies", "ref": "jobes-silva-2015", "fragment": "La investigación académica considera ese relato una narración apologética con elementos legendarios"},
+       {"doc": "nota-testimonios-antiguos", "stance": "contextualizes", "ref": "tov-2012", "fragment": "en algunos libros, como Jeremías, refleja un texto hebreo subyacente distinto del texto masorético."}
+     ],
+     "perspectives": [
+       {"label": "Relato tradicional de la Carta de Aristeas", "tradition": "judía helenística (fuente antigua)", "held_by": "Carta de Aristeas", "summary": "Setenta y dos traductores realizaron la traducción por encargo de Ptolomeo II."},
+       {"label": "Lectura histórico-crítica", "tradition": "académica", "held_by": "Estudios septuagintistas", "summary": "Relato apologético con elementos legendarios, compatible con un origen alejandrino en el s. III a. e. c."}
+     ]},
+    {"slug": "papiro-nash", "title": "Papiro Nash", "illustration": "papyrus", "place": "egipto",
+     "statement": "El papiro Nash, con el Decálogo y el comienzo del Shemá, se data paleográficamente entre los siglos II y I a. e. c.",
+     "asserted_by": "Estudios paleográficos", "discipline": "Paleografía hebrea", "category": "historical_document",
+     "date_start": -200, "date_end": -1, "date_precision": "range", "date_label": "s. II–I a. e. c. (paleografía)",
+     "insufficient_evidence_note": "La datación depende solo de la paleografía.",
+     "evidence": [
+       {"doc": "nota-testimonios-antiguos", "stance": "supports", "ref": "tov-2012", "fragment": "Contiene el Decálogo y el comienzo del Shemá (Deuteronomio 6:4-5)."},
+       {"doc": "nota-testimonios-antiguos", "stance": "supports", "ref": "tov-2012", "fragment": "Su datación se basa en la paleografía y suele situarse entre los siglos II y I a. e. c."},
+       {"doc": "nota-testimonios-antiguos", "stance": "qualifies", "ref": null, "fragment": "Probablemente fue un texto litúrgico o devocional, no una copia continua de un libro bíblico."}
+     ]},
+    {"slug": "qumran-datacion", "title": "Copia de los manuscritos de Qumrán", "illustration": "scroll", "place": "qumran",
+     "statement": "Los manuscritos de Qumrán fueron copiados aproximadamente entre el siglo III a. e. c. y el siglo I e. c. e incluyen más de 200 manuscritos bíblicos.",
+     "asserted_by": "Consenso de los estudios qumránicos", "discipline": "Paleografía, arqueología y radiocarbono", "category": "scholarly_consensus",
+     "date_start": -250, "date_end": 68, "date_precision": "range", "date_label": "c. s. III a. e. c. – s. I e. c.",
+     "consensus_note": "Paleografía, arqueología y radiocarbono convergen en este rango general.",
+     "insufficient_evidence_note": "La fecha de cada manuscrito individual tiene márgenes de error propios.",
+     "evidence": [
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "vanderkam-2010", "fragment": "Los manuscritos de Qumrán fueron copiados aproximadamente entre el siglo III a. e. c. y el siglo I e. c."},
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "vanderkam-2010", "fragment": "La datación combina paleografía, contexto arqueológico y análisis de radiocarbono."},
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "leon-levy-dss", "fragment": "Entre ellos hay más de 200 manuscritos bíblicos, en su mayoría fragmentarios."}
+     ]},
+    {"slug": "gran-rollo-isaias", "title": "Gran rollo de Isaías (1QIsa-a)", "illustration": "scroll", "place": "qumran",
+     "statement": "El gran rollo de Isaías contiene el libro completo, se data aproximadamente en el siglo II a. e. c. y concuerda en lo sustancial con el texto masorético, con numerosas diferencias ortográficas.",
+     "asserted_by": "Estudios qumránicos", "discipline": "Crítica textual de la Biblia hebrea", "category": "historical_document",
+     "date_start": -200, "date_end": -101, "date_precision": "century", "date_label": "s. II a. e. c. (aprox.)",
+     "evidence": [
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "tov-2012", "fragment": "contiene el libro de Isaías completo y se data aproximadamente en el siglo II a. e. c."},
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "tov-2012", "fragment": "concuerda en lo sustancial con el texto masorético medieval, pero presenta numerosas diferencias de ortografía y un número menor de variantes de lectura."}
+     ]},
+    {"slug": "pluriformidad-textual", "title": "Pluriformidad textual en el Segundo Templo", "illustration": "scroll", "place": "qumran",
+     "statement": "En el período del Segundo Templo circulaban varias formas textuales de algunos libros bíblicos; no existía todavía un único texto estandarizado.",
+     "asserted_by": "Tov; Ulrich", "discipline": "Crítica textual de la Biblia hebrea", "category": "scholarly_consensus", "is_event": false,
+     "consensus_note": "Existe acuerdo sobre la diversidad textual; difiere el modelo para describirla.",
+     "evidence": [
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "tov-2012", "fragment": "circulaban varias formas textuales de algunos libros bíblicos"},
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "tov-2012", "fragment": "Ambos enfoques coinciden en que no existía todavía un único texto estandarizado."}
+     ],
+     "perspectives": [
+       {"label": "Grupos textuales", "tradition": "académica", "held_by": "Emanuel Tov", "summary": "Textos proto-masoréticos, presamaritanos, cercanos a la Septuaginta e independientes."},
+       {"label": "Ediciones literarias sucesivas", "tradition": "académica", "held_by": "Eugene Ulrich", "summary": "Parte de la diversidad refleja ediciones literarias sucesivas de los libros."}
+     ]},
+    {"slug": "qumran-esenios", "title": "¿Quiénes custodiaron los rollos?", "illustration": "scroll", "place": "qumran", "is_event": false,
+     "statement": "La identificación de los habitantes de Qumrán con un grupo esenio es mayoritaria, pero la relación entre el asentamiento, las cuevas y los manuscritos sigue debatida.",
+     "asserted_by": "Estudios qumránicos", "discipline": "Arqueología e historia del judaísmo antiguo", "category": "contested",
+     "evidence": [
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "vanderkam-2010", "fragment": "La hipótesis mayoritaria identifica a los habitantes de Qumrán con un grupo esenio"},
+       {"doc": "nota-mar-muerto", "stance": "challenges", "ref": "vanderkam-2010", "fragment": "Otros investigadores han propuesto que parte de los manuscritos procede de Jerusalén u otros lugares"}
+     ],
+     "perspectives": [
+       {"label": "Hipótesis Qumrán-esenia", "tradition": "académica (mayoritaria)", "held_by": "Mayoría de especialistas", "summary": "Un grupo esenio habitó el asentamiento y depositó los rollos en las cuevas."},
+       {"label": "Origen múltiple de los rollos", "tradition": "académica (minoritaria)", "held_by": "Diversos investigadores", "summary": "Parte de los manuscritos habría llegado desde Jerusalén u otros lugares."}
+     ]},
+    {"slug": "descubrimiento-qumran", "title": "Descubrimiento de los manuscritos del mar Muerto", "illustration": "scroll", "place": "qumran",
+     "statement": "Entre 1947 y 1956 se encontraron manuscritos en once cuevas cercanas a Qumrán.",
+     "asserted_by": "Registro arqueológico", "discipline": "Arqueología", "category": "empirical_fact",
+     "date_start": 1947, "date_end": 1956, "date_precision": "range", "date_label": "1947–1956",
+     "evidence": [
+       {"doc": "nota-mar-muerto", "stance": "supports", "ref": "vanderkam-2010", "fragment": "Entre 1947 y 1956 se encontraron manuscritos en once cuevas cercanas a Qumrán"}
+     ]},
+    {"slug": "papiro-52", "title": "Papiro 52 (Juan 18)", "illustration": "papyrus", "place": "egipto",
+     "statement": "El papiro P52 contiene versículos de Juan 18 y se data paleográficamente en el siglo II, aunque el rango de fechas posible es objeto de debate.",
+     "asserted_by": "C. H. Roberts (1935); B. Nongbri (2005)", "discipline": "Papirología", "category": "contested",
+     "date_start": 100, "date_end": 225, "date_precision": "disputed", "date_label": "s. II (rango discutido; propuestas hasta inicios del s. III)",
+     "consensus_note": "No hay consenso sobre una fecha precisa.",
+     "insufficient_evidence_note": "La datación es exclusivamente paleográfica.",
+     "future_research_note": "Nuevos papiros fechados con seguridad mejorarían las comparaciones paleográficas.",
+     "evidence": [
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "contiene versículos de Juan 18:31-33 y 18:37-38"},
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "Durante décadas se citó una fecha en la primera mitad del siglo II."},
+       {"doc": "nota-papiros-codices", "stance": "challenges", "ref": "nongbri-2005", "fragment": "En 2005 Brent Nongbri sostuvo que las comparaciones paleográficas permiten un rango más amplio"},
+       {"doc": "nota-papiros-codices", "stance": "qualifies", "ref": "nongbri-2005", "fragment": "La fecha precisa de P52 es incierta y no debe presentarse como un dato exacto."}
+     ],
+     "perspectives": [
+       {"label": "Datación temprana", "tradition": "académica (tradicional)", "held_by": "C. H. Roberts y estudios posteriores", "summary": "Primera mitad del siglo II."},
+       {"label": "Rango amplio", "tradition": "académica", "held_by": "Brent Nongbri (2005)", "summary": "La paleografía permite fechas hasta finales del s. II o comienzos del III."}
+     ]},
+    {"slug": "papiro-46", "title": "Papiro 46 (cartas paulinas)", "illustration": "papyrus", "place": "egipto",
+     "statement": "El papiro P46, un códice de cartas paulinas, se data habitualmente hacia el año 200.",
+     "asserted_by": "Estudios papirológicos", "discipline": "Papirología", "category": "historical_document",
+     "date_start": 175, "date_end": 225, "date_precision": "approximate_year", "date_label": "c. 200 (175–225)",
+     "evidence": [
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "es un códice de cartas paulinas datado habitualmente hacia el año 200"}
+     ]},
+    {"slug": "papiro-75", "title": "Papiro 75 (Lucas y Juan)", "illustration": "papyrus", "place": "egipto",
+     "statement": "El papiro P75 (c. 175–225) concuerda muy estrechamente con el Códice Vaticano, lo que muestra que esa forma textual existía más de un siglo antes.",
+     "asserted_by": "Estudios de crítica textual del NT", "discipline": "Crítica textual del Nuevo Testamento", "category": "scholarly_consensus",
+     "date_start": 175, "date_end": 225, "date_precision": "range", "date_label": "c. 175–225",
+     "evidence": [
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "aland-aland-1989", "fragment": "se data aproximadamente entre 175 y 225"},
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "aland-aland-1989", "fragment": "Su texto concuerda muy estrechamente con el del Códice Vaticano"}
+     ]},
+    {"slug": "codice-sinaitico", "title": "Códice Sinaítico", "illustration": "codex", "place": "sinai",
+     "statement": "El Códice Sinaítico, copiado a mediados del siglo IV, es el manuscrito más antiguo que conserva el Nuevo Testamento completo.",
+     "asserted_by": "Estudios codicológicos", "discipline": "Codicología y crítica textual", "category": "historical_document",
+     "date_start": 330, "date_end": 360, "date_precision": "range", "date_label": "mediados del s. IV",
+     "evidence": [
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "parker-2010", "fragment": "copiado a mediados del siglo IV. Es el manuscrito más antiguo que conserva el Nuevo Testamento completo."},
+       {"doc": "nota-papiros-codices", "stance": "contextualizes", "ref": "codex-sinaiticus-project", "fragment": "En 2009 el proyecto Codex Sinaiticus publicó en línea imágenes digitales de todas las partes conservadas."}
+     ]},
+    {"slug": "codice-vaticano", "title": "Códice Vaticano", "illustration": "codex", "place": "roma",
+     "statement": "El Códice Vaticano (Vat. gr. 1209) es un manuscrito griego de la Biblia del siglo IV conservado en la Biblioteca Apostólica Vaticana.",
+     "asserted_by": "Estudios codicológicos", "discipline": "Codicología", "category": "historical_document",
+     "date_start": 300, "date_end": 350, "date_precision": "range", "date_label": "s. IV (prob. 300–350)",
+     "evidence": [
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "es un manuscrito griego de la Biblia datado en el siglo IV, probablemente entre 300 y 350"}
+     ]},
+    {"slug": "vulgata", "title": "La Vulgata de Jerónimo", "illustration": "codex", "place": "belen",
+     "statement": "Jerónimo revisó los evangelios latinos por encargo de Dámaso (c. 382) y tradujo del hebreo la mayor parte del Antiguo Testamento, hasta c. 405.",
+     "asserted_by": "Historia de la Biblia latina", "discipline": "Historia y filología latina", "category": "historical_document",
+     "date_start": 382, "date_end": 405, "date_precision": "range", "date_label": "c. 382–405",
+     "evidence": [
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "de-hamel-2001", "fragment": "Hacia el año 382, el papa Dámaso encargó a Jerónimo una revisión de los evangelios latinos."},
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "de-hamel-2001", "fragment": "tradujo la mayor parte de los libros del Antiguo Testamento directamente del hebreo, tarea que concluyó hacia el año 405"}
+     ]},
+    {"slug": "codice-alejandrino", "title": "Códice Alejandrino", "illustration": "codex", "place": "londres",
+     "statement": "El Códice Alejandrino es un manuscrito griego de la Biblia del siglo V conservado en la British Library.",
+     "asserted_by": "Estudios codicológicos", "discipline": "Codicología", "category": "historical_document",
+     "date_start": 400, "date_end": 499, "date_precision": "century", "date_label": "s. V",
+     "evidence": [
+       {"doc": "nota-papiros-codices", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "El Códice Alejandrino es un manuscrito griego de la Biblia del siglo V."}
+     ]},
+    {"slug": "masoretas", "title": "Los masoretas de Tiberíades", "illustration": "codex", "place": "tiberiades",
+     "statement": "Entre los siglos VII y X e. c. los masoretas desarrollaron vocales, acentos y notas marginales para fijar la lectura del texto hebreo.",
+     "asserted_by": "Estudios masoréticos", "discipline": "Filología hebrea", "category": "scholarly_consensus",
+     "date_start": 600, "date_end": 1000, "date_precision": "century", "date_label": "c. s. VII – X e. c.",
+     "evidence": [
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "tov-2012", "fragment": "desarrollaron sistemas de vocales, acentos y notas marginales (la masora) para fijar la lectura y la transmisión del texto consonántico hebreo"}
+     ]},
+    {"slug": "codice-alepo", "title": "Códice de Alepo", "illustration": "codex", "place": "tiberiades",
+     "statement": "El Códice de Alepo fue copiado hacia 930 e. c.; dañado en 1947, perdió una parte considerable, incluida casi toda la Torá.",
+     "asserted_by": "Estudios masoréticos", "discipline": "Codicología hebrea", "category": "historical_document",
+     "date_start": 930, "date_end": 930, "date_precision": "approximate_year", "date_label": "c. 930 e. c.",
+     "insufficient_evidence_note": "Las circunstancias exactas de la pérdida de las hojas que faltan siguen sin aclararse.",
+     "evidence": [
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "tov-2012", "fragment": "El Códice de Alepo fue copiado hacia el año 930 e. c. en Tiberíades"},
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "tov-2012", "fragment": "En los disturbios de 1947 resultó dañado y una parte considerable, incluida casi toda la Torá, se perdió."},
+       {"doc": "nota-vulgata-masora", "stance": "qualifies", "ref": null, "fragment": "Las circunstancias exactas de la pérdida de las hojas que faltan siguen sin aclararse."}
+     ]},
+    {"slug": "codice-leningrado", "title": "Códice de Leningrado", "illustration": "codex", "place": "el-cairo",
+     "statement": "El Códice de Leningrado, fechado por su colofón en 1008 o 1009 e. c., es el manuscrito completo y fechado más antiguo de la Biblia hebrea con vocalización tiberiense.",
+     "asserted_by": "Colofón del manuscrito; estudios masoréticos", "discipline": "Codicología hebrea", "category": "historical_document",
+     "date_start": 1008, "date_end": 1009, "date_precision": "range", "date_label": "1008/1009 e. c. (colofón)",
+     "evidence": [
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "freedman-1998", "fragment": "su colofón indica una fecha equivalente a 1008 o 1009 e. c."},
+       {"doc": "nota-vulgata-masora", "stance": "supports", "ref": "freedman-1998", "fragment": "Es el manuscrito completo y fechado más antiguo de la Biblia hebrea con vocalización tiberiense."}
+     ]},
+    {"slug": "biblia-gutenberg", "title": "Biblia de Gutenberg", "illustration": "printed_book", "place": "maguncia",
+     "statement": "La Biblia de Gutenberg, impresa en Maguncia hacia 1454-1455, reproduce la Vulgata y es el primer gran libro europeo impreso con tipos móviles metálicos.",
+     "asserted_by": "Historia del libro", "discipline": "Historia del libro", "category": "historical_document",
+     "date_start": 1454, "date_end": 1455, "date_precision": "range", "date_label": "c. 1454–1455",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "de-hamel-2001", "fragment": "La Biblia de Gutenberg, impresa en Maguncia hacia 1454-1455, reproduce el texto latino de la Vulgata."}
+     ]},
+    {"slug": "poliglota-complutense", "title": "Políglota Complutense", "illustration": "printed_book", "place": "alcala",
+     "statement": "La Políglota Complutense se imprimió en Alcalá de Henares entre 1514 y 1517, pero no se difundió hasta hacia 1520-1522.",
+     "asserted_by": "Historia de las ediciones bíblicas", "discipline": "Historia del libro", "category": "historical_document",
+     "date_start": 1514, "date_end": 1517, "date_precision": "range", "date_label": "1514–1517 (difusión c. 1520–1522)",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "se imprimió en Alcalá de Henares entre 1514 y 1517"},
+       {"doc": "nota-imprenta-ediciones", "stance": "qualifies", "ref": "metzger-ehrman-2005", "fragment": "la obra no se difundió hasta hacia 1520-1522, después de la autorización papal."}
+     ]},
+    {"slug": "erasmo-1516", "title": "Novum Instrumentum de Erasmo", "illustration": "printed_book", "place": "basilea",
+     "statement": "En 1516 Erasmo publicó en Basilea la primera edición publicada del Nuevo Testamento griego, basada en pocos manuscritos bizantinos tardíos.",
+     "asserted_by": "Historia de las ediciones bíblicas", "discipline": "Crítica textual del NT", "category": "historical_document",
+     "date_start": 1516, "date_end": 1516, "date_precision": "exact_year", "date_label": "1516",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "la primera edición publicada del Nuevo Testamento griego"},
+       {"doc": "nota-imprenta-ediciones", "stance": "qualifies", "ref": "metzger-ehrman-2005", "fragment": "Se basó en un número reducido de manuscritos bizantinos tardíos disponibles en Basilea."}
+     ]},
+    {"slug": "segunda-biblia-rabinica", "title": "Segunda Biblia Rabínica", "illustration": "printed_book", "place": "venecia",
+     "statement": "La Segunda Biblia Rabínica (Venecia, 1524-1525) se convirtió durante siglos en el texto hebreo impreso de referencia.",
+     "asserted_by": "Historia de las ediciones hebreas", "discipline": "Historia del libro hebreo", "category": "historical_document",
+     "date_start": 1524, "date_end": 1525, "date_precision": "range", "date_label": "1524–1525",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "tov-2012", "fragment": "se convirtió durante siglos en el texto hebreo impreso de referencia"}
+     ]},
+    {"slug": "biblia-del-oso", "title": "Biblia del Oso (Reina)", "illustration": "printed_book", "place": "basilea",
+     "statement": "En 1569 Casiodoro de Reina publicó en Basilea la primera Biblia completa impresa en castellano; Cipriano de Valera la revisó en 1602.",
+     "asserted_by": "Historia de la Biblia en español", "discipline": "Historia del libro", "category": "historical_document",
+     "date_start": 1569, "date_end": 1569, "date_precision": "exact_year", "date_label": "1569",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": null, "fragment": "En 1569 Casiodoro de Reina publicó en Basilea la llamada Biblia del Oso, la primera Biblia completa impresa en castellano."},
+       {"doc": "nota-imprenta-ediciones", "stance": "contextualizes", "ref": null, "fragment": "Cipriano de Valera publicó una revisión en Ámsterdam en 1602."}
+     ]},
+    {"slug": "textus-receptus", "title": "Origen de la expresión Textus Receptus", "illustration": "printed_book", "place": "leiden",
+     "statement": "La expresión Textus Receptus procede del prefacio de la edición de los Elzevir (Leiden, 1633).",
+     "asserted_by": "Historia de las ediciones del NT", "discipline": "Crítica textual del NT", "category": "historical_document",
+     "date_start": 1633, "date_end": 1633, "date_precision": "exact_year", "date_label": "1633",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "La expresión Textus Receptus procede del prefacio de la edición de los Elzevir publicada en Leiden en 1633."}
+     ]},
+    {"slug": "westcott-hort", "title": "Edición de Westcott y Hort", "illustration": "critical_edition", "place": "cambridge",
+     "statement": "En 1881 Westcott y Hort publicaron una edición crítica del Nuevo Testamento griego que dio gran peso a los códices Vaticano y Sinaítico.",
+     "asserted_by": "Historia de la crítica textual", "discipline": "Crítica textual del NT", "category": "historical_document",
+     "date_start": 1881, "date_end": 1881, "date_precision": "exact_year", "date_label": "1881",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "una edición crítica que otorgó gran peso a los códices Vaticano y Sinaítico y se apartó del Textus Receptus."}
+     ]},
+    {"slug": "bhs-bhq", "title": "Biblia Hebraica Stuttgartensia y Quinta", "illustration": "critical_edition", "place": "stuttgart",
+     "statement": "La Biblia Hebraica Stuttgartensia (1967-1977) edita el Códice de Leningrado con aparato crítico; la Biblia Hebraica Quinta se publica por fascículos desde 2004.",
+     "asserted_by": "Deutsche Bibelgesellschaft", "discipline": "Crítica textual de la Biblia hebrea", "category": "historical_document",
+     "date_start": 1967, "date_end": 1977, "date_precision": "range", "date_label": "1967–1977 (BHQ desde 2004)",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "bhs", "fragment": "La Biblia Hebraica Stuttgartensia, publicada entre 1967 y 1977, edita el texto del Códice de Leningrado con un aparato crítico."},
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "tov-2012", "fragment": "Su sucesora, la Biblia Hebraica Quinta, se publica por fascículos desde 2004."}
+     ]},
+    {"slug": "na28", "title": "Nestle-Aland 28 y Editio Critica Maior", "illustration": "critical_edition", "place": "munster",
+     "statement": "La 28.ª edición de Nestle-Aland se publicó en 2012; la Editio Critica Maior, iniciada en 1997, sigue en curso.",
+     "asserted_by": "Deutsche Bibelgesellschaft; INTF Münster", "discipline": "Crítica textual del NT", "category": "historical_document",
+     "date_start": 2012, "date_end": 2012, "date_precision": "exact_year", "date_label": "2012 (ECM desde 1997, en curso)",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "na28-2012", "fragment": "La 28.ª edición del Novum Testamentum Graece de Nestle-Aland se publicó en Stuttgart en 2012."},
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "ntvmr", "fragment": "cuyas primeras entregas aparecieron en 1997 y que sigue en curso"}
+     ]},
+    {"slug": "sin-autografos", "title": "No se conservan autógrafos", "illustration": "critical_edition", "place": null, "is_event": false,
+     "statement": "No se conserva ningún manuscrito original (autógrafo) de ningún libro bíblico; las ediciones críticas reconstruyen formas textuales a partir de copias posteriores.",
+     "asserted_by": "Consenso de la crítica textual", "discipline": "Crítica textual", "category": "scholarly_consensus",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "metzger-ehrman-2005", "fragment": "No se conserva ningún autógrafo, es decir, ningún manuscrito original, de ningún libro bíblico."},
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": "tov-2012", "fragment": "Las ediciones críticas reconstruyen formas textuales a partir de copias posteriores, traducciones antiguas y citas."}
+     ]},
+    {"slug": "texto-original-pregunta-abierta", "title": "¿Qué es el «texto original»?", "illustration": "critical_edition", "place": null, "is_event": false,
+     "statement": "Qué significa reconstruir un texto original es una cuestión abierta, especialmente para libros que circularon en varias ediciones literarias.",
+     "asserted_by": "Debate en la crítica textual", "discipline": "Crítica textual y epistemología", "category": "open_question",
+     "future_research_note": "Nuevos hallazgos y modelos (p. ej., el método genealógico basado en coherencia) siguen modificando este debate.",
+     "evidence": [
+       {"doc": "nota-imprenta-ediciones", "stance": "supports", "ref": null, "fragment": "Qué significa reconstruir un texto original es una cuestión abierta en la crítica textual."},
+       {"doc": "nota-imprenta-ediciones", "stance": "contextualizes", "ref": "tov-2012", "fragment": "ciertos especialistas consideran más adecuado hablar de la forma textual más antigua alcanzable que de un único original."}
+     ],
+     "perspectives": [
+       {"label": "Reconstrucción del texto inicial", "tradition": "académica", "held_by": "Tradición de las ediciones críticas", "summary": "Se busca la forma textual más antigua alcanzable a partir de los testimonios."},
+       {"label": "Pluralidad de ediciones literarias", "tradition": "académica", "held_by": "Especialistas en pluriformidad textual", "summary": "Para algunos libros no tiene sentido hablar de un único original."}
+     ]}
+  ]
+}

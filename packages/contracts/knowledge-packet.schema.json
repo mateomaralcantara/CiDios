@@ -1,0 +1,548 @@
+{
+  "$defs": {
+    "BibRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "slug": {
+          "title": "Slug",
+          "type": "string"
+        },
+        "authors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Authors",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "container_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Container Title"
+        },
+        "publisher": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publisher"
+        },
+        "year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Year"
+        },
+        "edition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Edition"
+        },
+        "identifiers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "title": "Identifiers",
+          "type": "object"
+        },
+        "identifier_check": {
+          "title": "Identifier Check",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "authors",
+        "title",
+        "identifier_check"
+      ],
+      "title": "BibRef",
+      "type": "object"
+    },
+    "DateInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "precision": {
+          "title": "Precision",
+          "type": "string"
+        },
+        "precision_label": {
+          "title": "Precision Label",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "precision",
+        "precision_label",
+        "label"
+      ],
+      "title": "DateInfo",
+      "type": "object"
+    },
+    "DocumentRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "slug": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slug"
+        },
+        "license_code": {
+          "title": "License Code",
+          "type": "string"
+        },
+        "review_status": {
+          "title": "Review Status",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "license_code",
+        "review_status",
+        "kind"
+      ],
+      "title": "DocumentRef",
+      "type": "object"
+    },
+    "EvidenceItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "stance": {
+          "enum": [
+            "supports",
+            "challenges",
+            "contextualizes",
+            "qualifies"
+          ],
+          "title": "Stance",
+          "type": "string"
+        },
+        "fragment": {
+          "title": "Fragment",
+          "type": "string"
+        },
+        "locator": {
+          "title": "Locator",
+          "type": "string"
+        },
+        "document": {
+          "$ref": "#/$defs/DocumentRef"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BibRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verification": {
+          "enum": [
+            "fragment_verified",
+            "fragment_mismatch",
+            "unverified",
+            "reference_missing"
+          ],
+          "title": "Verification",
+          "type": "string"
+        },
+        "verification_notes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Verification Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "stance",
+        "fragment",
+        "locator",
+        "document",
+        "verification"
+      ],
+      "title": "EvidenceItem",
+      "type": "object"
+    },
+    "PacketClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "slug": {
+          "title": "Slug",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "statement_sha256": {
+          "title": "Statement Sha256",
+          "type": "string"
+        },
+        "asserted_by": {
+          "title": "Asserted By",
+          "type": "string"
+        },
+        "discipline": {
+          "title": "Discipline",
+          "type": "string"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "category_label": {
+          "title": "Category Label",
+          "type": "string"
+        },
+        "is_event": {
+          "title": "Is Event",
+          "type": "boolean"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateInfo"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "place": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Place"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject"
+        },
+        "illustration_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Illustration Kind"
+        },
+        "consensus_note": {
+          "default": "",
+          "title": "Consensus Note",
+          "type": "string"
+        },
+        "insufficient_evidence_note": {
+          "default": "",
+          "title": "Insufficient Evidence Note",
+          "type": "string"
+        },
+        "future_research_note": {
+          "default": "",
+          "title": "Future Research Note",
+          "type": "string"
+        },
+        "review_status": {
+          "title": "Review Status",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "perspectives": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/PerspectiveItem"
+          },
+          "title": "Perspectives",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "statement",
+        "statement_sha256",
+        "asserted_by",
+        "discipline",
+        "category",
+        "category_label",
+        "is_event",
+        "review_status",
+        "evidence"
+      ],
+      "title": "PacketClaim",
+      "type": "object"
+    },
+    "PerspectiveItem": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "tradition": {
+          "title": "Tradition",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "held_by": {
+          "default": "",
+          "title": "Held By",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "tradition",
+        "summary"
+      ],
+      "title": "PerspectiveItem",
+      "type": "object"
+    },
+    "Place": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "lat": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lat"
+        },
+        "lon": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lon"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Place",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "packet_version": {
+      "default": "1.0.0",
+      "title": "Packet Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "topic": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Topic"
+    },
+    "generated_at": {
+      "title": "Generated At",
+      "type": "string"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/PacketClaim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "excluded_claims": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Excluded Claims",
+      "type": "array"
+    },
+    "uncertainties": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Uncertainties",
+      "type": "array"
+    },
+    "limitations": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "coverage": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Coverage",
+      "type": "object"
+    },
+    "sha256": {
+      "default": "",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "question",
+    "topic",
+    "generated_at",
+    "claims"
+  ],
+  "title": "KnowledgePacket",
+  "type": "object",
+  "$id": "https://cienciadedios.org/contracts/knowledge-packet/1.0.0",
+  "x-version": "1.0.0"
+}
