@@ -257,3 +257,27 @@ def test_injected_document_is_never_used_as_evidence(owner, user):
     titles = {h["document_title"] for o in outs for h in o["output"]["chunks"]}
     assert "Documento malicioso" not in titles
     assert any("riesgo de inyección" in e["message"] for e in _events(r["run_id"]))
+
+
+@pytest.mark.parametrize("prompt, area", [
+    ("¿Qué dice la cosmología moderna sobre el origen del universo y el Big Bang?", "Cosmología y astrofísica"),
+    ("¿Cuál es la receta tradicional de la tortilla de patatas con cebolla?", None),
+])
+def test_out_of_corpus_question_reports_no_evidence(user, prompt, area):
+    """Sin evidencia pertinente no se genera contenido: la ejecución termina en PARTIAL y lo explica."""
+    r = engine.create_investigation(user, prompt, force_new=True)
+    assert engine.process_run(r["run_id"]) == "PARTIAL"
+    with service_tx() as c:
+        run = c.execute("select result from public.harness_runs where id=%s", (r["run_id"],)).fetchone()
+        exp = c.execute("select count(*) n from public.experiences where run_id=%s", (r["run_id"],)).fetchone()
+        inv = c.execute("select status from public.investigations where id=%s", (r["investigation_id"],)).fetchone()
+    assert run["result"]["no_evidence"] is True and "No se genera contenido sin fuentes" in run["result"]["message"]
+    assert run["result"]["area"] == area
+    assert exp["n"] == 0 and inv["status"] == "no_evidence"
+    tasks = _tasks(r["run_id"])
+    assert tasks["render"]["status"] == "skipped" and tasks["qa"]["status"] == "skipped"
+
+
+def test_final_run_still_retrieves_all_relevant_claims(final_run):
+    packet = KnowledgePacket.model_validate(final_run["experience"]["knowledge_packet"])
+    assert len(packet.claims) == 29

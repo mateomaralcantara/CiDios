@@ -22,7 +22,7 @@ from ...experience.contracts import (
     Place,
     packet_hash,
 )
-from ..context import AgentContext
+from ..context import AgentContext, NoEvidence
 
 ERA_BOUNDS = [(-10_000, 0, "Antigüedad (a. e. c.)"), (1, 399, "Siglos I–IV"), (400, 1399, "Antigüedad tardía y Edad Media"),
               (1400, 1799, "Imprenta, Renacimiento y Reforma"), (1800, 3000, "Época contemporánea")]
@@ -42,6 +42,19 @@ def consensus_analyst(ctx: AgentContext) -> dict[str, Any]:
         ids = _all_claim_ids(ctx)
         with ctx.as_owner() as conn:
             claims = get_claims(conn, ids, with_evidence=False)
+            topic = ctx.task_input.get("topic")
+            area = conn.execute("select title, content_status from public.topics where slug = %s", (topic,)).fetchone() if topic else None
+        if not claims:
+            if area:
+                msg = (f"No hay evidencia verificada en la biblioteca para esta pregunta. Área detectada: «{area['title']}»"
+                       + (" (todavía sin contenido verificado)." if area["content_status"] == "empty" else "."))
+            else:
+                msg = "No hay evidencia verificada en la biblioteca para esta pregunta, y no se reconoció un área de la enciclopedia."
+            raise NoEvidence(msg + " No se genera contenido sin fuentes.", {
+                "topic": topic, "area": area["title"] if area else None,
+                "suggestions": ["Aporta documentos con derechos de uso en la Biblioteca (o pide a un editor que los revise y publique).",
+                                "Reformula la pregunta con términos más concretos.",
+                                "Cuando estén activos los conectores y la extracción asistida, se podrán incorporar fuentes externas."]})
         coverage: dict[str, int] = {label: 0 for *_, label in ERA_BOUNDS}
         for c in claims:
             if c["date_start"] is not None:

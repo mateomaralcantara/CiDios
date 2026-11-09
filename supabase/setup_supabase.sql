@@ -792,6 +792,12 @@ comment on table public.budget_policies is 'Políticas de presupuesto (global, u
 comment on table public.cost_ledger is 'Libro de costes: estimaciones, gastos confirmados, tokens, proveedor, modelo y aciertos de caché.';
 comment on function public.hybrid_search(text, vector, int, text) is 'Búsqueda textual, semántica o híbrida sobre la biblioteca (respeta RLS). Llamable por RPC.';
 
+-- ######## 20261110000006_no_evidence_status ########
+-- Estado de investigación «no_evidence»: la biblioteca no tenía evidencia pertinente y no se generó contenido.
+alter table public.investigations drop constraint if exists investigations_status_check;
+alter table public.investigations add constraint investigations_status_check
+  check (status in ('open','running','ready','published','archived','failed','no_evidence'));
+
 -- ######## registro de migraciones (compatible con Supabase CLI) ########
 create schema if not exists supabase_migrations;
 create table if not exists supabase_migrations.schema_migrations (version text not null primary key, statements text[], name text);
@@ -800,7 +806,8 @@ insert into supabase_migrations.schema_migrations (version, name) values
   ('20261109000002', 'rls'),
   ('20261109000003', 'search'),
   ('20261109000004', 'auth_hooks'),
-  ('20261110000005', 'supabase_compat')
+  ('20261110000005', 'supabase_compat'),
+  ('20261110000006', 'no_evidence_status')
 on conflict (version) do nothing;
 
 commit;

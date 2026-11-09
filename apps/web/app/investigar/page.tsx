@@ -50,7 +50,7 @@ export default function Investigar() {
       <h2 className="mb-3 mt-10 text-2xl font-semibold">Mis investigaciones</h2>
       <div className="ui space-y-2">{list.map((i) => (
         <div key={i.id} className="card flex flex-wrap items-center gap-3 p-3 text-sm">
-          <span className="chip bg-stone-100 dark:bg-stone-800">{i.state}</span>
+          <span className="chip bg-stone-100 dark:bg-stone-800">{i.state === "PARTIAL" ? "SIN EVIDENCIA" : i.state}</span>
           <span className="flex-1 truncate" title={i.prompt}>{i.prompt}</span>
           <span className="muted">{formatUsd(i.spent_usd)} · {formatDate(i.created_at)}</span>
           <Link className="underline" href={`/ejecuciones/${i.run_id}`}>Ejecución</Link>

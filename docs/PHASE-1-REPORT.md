@@ -65,5 +65,11 @@ Capturas: `docs/screenshots/`.
 - El panel renderizaba una pestaña con los datos de otra → los datos quedan asociados a su pestaña.
 - La búsqueda textual exigía todos los términos → combinación OR con ranking por cobertura.
 
+## Pertinencia y ausencia de evidencia (corregido tras la fase 1)
+Una pregunta fuera del corpus (p. ej. cosmología) recuperaba afirmaciones bíblicas sin relación por coincidencias débiles.
+Ahora el bibliotecario descarta fragmentos poco pertinentes (cobertura de términos < 50 % y similitud semántica < 0,35) y
+afirmaciones de otra área; si no queda evidencia, la ejecución termina en `PARTIAL` con el mensaje «No hay evidencia
+verificada… No se genera contenido sin fuentes» (estado de investigación `no_evidence`). Prueba: `test_out_of_corpus_question_reports_no_evidence`.
+
 ## Siguientes pasos
 Ver `ROADMAP.md`.

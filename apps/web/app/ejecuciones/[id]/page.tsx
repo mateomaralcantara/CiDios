@@ -9,7 +9,7 @@ interface Task { task_key: string; agent_code: string; phase: string; depends_on
   allowed_tools: string[]; agent_version: string; completion_criteria: string; error: string | null; started_at: string | null; finished_at: string | null }
 interface RunDetail {
   run: { id: string; state: string; previous_state: string | null; budget_usd: string; spent_usd: string; estimated_usd: string; requires_approval: boolean;
-    approved_at: string | null; error: string | null; result: { experience_id?: string; claims?: number; excluded?: number }; created_at: string; owner_id: string };
+    approved_at: string | null; error: string | null; result: { experience_id?: string; claims?: number; excluded?: number; no_evidence?: boolean; message?: string; suggestions?: string[] }; created_at: string; owner_id: string };
   investigation: { prompt: string; intent: Record<string, unknown> };
   tasks: Task[]; costs: { kind: string; agent_code: string | null; provider: string; model: string; amount_usd: string; cache_hit: boolean; note: string; created_at: string }[];
   checkpoints: { task_key: string; state: string; output_sha256: string }[]; state_chain: string[];
@@ -74,6 +74,14 @@ export default function RunPage() {
         ))}
       </ol>
       {r.error && <p role="alert" className="mt-3 text-sm text-rose-700">Error: {r.error}</p>}
+      {r.result?.no_evidence && (
+        <div className="card mx-auto mt-4 max-w-3xl p-4" role="status" data-testid="no-evidence">
+          <p className="font-semibold">Sin evidencia suficiente</p>
+          <p className="mt-1 text-sm">{r.result.message}</p>
+          {r.result.suggestions && <ul className="list-disc mt-2 pl-5 text-sm">{r.result.suggestions.map((x) => <li key={x}>{x}</li>)}</ul>}
+          <p className="muted mt-2 text-xs">Ciencia y Dios no genera contenido sin fuentes verificables.</p>
+        </div>
+      )}
       {r.state === "AWAITING_APPROVAL" && <p className="mt-3 text-sm">Esta investigación requiere aprobación explícita del propietario para el gasto estimado.</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         {!ACTIVE.has(r.state) && !["PAUSED", "AWAITING_APPROVAL", "BUDGET_EXHAUSTED"].includes(r.state) && <button className="btn" onClick={() => act("pause")}>Pausar</button>}

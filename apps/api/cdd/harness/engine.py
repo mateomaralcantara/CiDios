@@ -31,7 +31,7 @@ from .agents.experience import pedagogical_architect, timeline_director
 from .agents.governance import budget_custodian, dag_planner, intent_interpreter
 from .agents.library import universal_librarian
 from .agents.quality import contract_validator
-from .context import AgentContext, log_event
+from .context import AgentContext, NoEvidence, log_event
 from .states import MAIN_CHAIN, TERMINAL, assert_transition
 
 AGENT_FUNCTIONS = {
@@ -212,6 +212,18 @@ def execute_task(run_id: str, task_key: str) -> None:
         output = AGENT_FUNCTIONS[agent["code"]](ctx)
     except Halt:
         raise
+    except NoEvidence as ne:
+        result = {"no_evidence": True, "message": str(ne), **ne.details}
+        with service_tx() as conn:
+            conn.execute("""update public.harness_tasks set status='succeeded', output=%s, finished_at=now()
+                            where id=%s""", (json.dumps({"no_evidence": True, "message": str(ne)}), task["id"]))
+            conn.execute("""update public.harness_tasks set status='skipped'
+                            where run_id=%s and status in ('queued','pending')""", (run_id,))
+            conn.execute("update public.harness_runs set result=%s, queued=false where id=%s", (json.dumps(result), run_id))
+            conn.execute("""update public.investigations set status='no_evidence' where id =
+                            (select investigation_id from public.harness_runs where id=%s)""", (run_id,))
+        log_event(run_id, "no_evidence", str(ne), level="warning", task_key=task_key, data=ne.details)
+        raise Halt("PARTIAL", "Sin evidencia pertinente en la biblioteca") from None
     except Exception as e:  # noqa: BLE001 — se registra y se decide reintento
         err = f"{type(e).__name__}: {e}"
         with service_tx() as conn:

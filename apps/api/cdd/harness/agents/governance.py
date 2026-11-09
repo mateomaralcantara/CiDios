@@ -111,7 +111,8 @@ def build_plan(intent: dict[str, Any], prompt: str, operational: set[str]) -> di
                       "input": {"queries": qs + ([prompt] if name == groups[0][0] else []), "topic": intent["topic"]},
                       "completion_criteria": "Al menos un fragmento recuperado o ausencia documentada"})
     tasks += [
-        {"key": "analyze", "agent": "consensus_analyst", "phase": "ANALYZING", "depends_on": acq_keys, "input": {"mode": "analyze"},
+        {"key": "analyze", "agent": "consensus_analyst", "phase": "ANALYZING", "depends_on": acq_keys,
+         "input": {"mode": "analyze", "topic": intent["topic"]},
          "completion_criteria": "Afirmaciones candidatas agrupadas y cobertura temporal evaluada"},
         {"key": "cross_examine", "agent": "consensus_analyst", "phase": "CROSS_EXAMINING", "depends_on": ["analyze"],
          "input": {"mode": "cross_examine"},

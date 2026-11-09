@@ -13,6 +13,14 @@ class ToolNotAuthorized(Exception):
     pass
 
 
+class NoEvidence(Exception):
+    """La biblioteca no contiene evidencia pertinente: la ejecución termina en PARTIAL sin generar contenido."""
+
+    def __init__(self, message: str, details: dict | None = None):
+        super().__init__(message)
+        self.details = details or {}
+
+
 @dataclass
 class AgentContext:
     run_id: str
