@@ -64,7 +64,9 @@ def get_pool() -> ConnectionPool:
             get_settings().database_url,
             min_size=1,
             max_size=10,
-            kwargs={"row_factory": dict_row, "autocommit": False},
+            kwargs={"row_factory": dict_row, "autocommit": False,
+                    # El pooler de Supabase en modo transacción (puerto 6543) no admite sentencias preparadas
+                    **({"prepare_threshold": None} if ":6543" in get_settings().database_url else {})},
             configure=_configure,
             open=True,
         )

@@ -16,7 +16,8 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx | null>(null);
 const KEY = "cdd.dev-session";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; // clave pública (anon); nunca la service_role
+// Clave pública del proyecto: «publishable key» (sb_publishable_…) o la «anon key» clásica. NUNCA la secret/service_role.
+const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const DEV_AUTH = process.env.NEXT_PUBLIC_DEV_AUTH === "true";
 
 export function AuthProvider({ children }: { children: ReactNode }) {

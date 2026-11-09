@@ -55,15 +55,9 @@ cd apps/web && node e2e/final-test.mjs
 ```
 
 ## Supabase (proyecto propio, independiente de ChatBiblia)
-1. Crea un proyecto nuevo en Supabase (no reutilices ninguno de ChatBiblia).
-2. Activa las extensiones `vector`, `pg_trgm`, `unaccent` (las migraciones las crean si el rol lo permite).
-3. Aplica las migraciones: `supabase link --project-ref <ref> && supabase db push` (usa `supabase/migrations/`).
-   **No** ejecutes `supabase/tests/00_local_supabase_shim.sql` en Supabase.
-4. Carga el catálogo: `CDD_DATABASE_URL=<cadena de conexión del pooler> python -m cdd.seed` (sin `--dev-users`).
-5. Asigna el primer propietario desde el editor SQL:
-   `insert into public.user_roles (user_id, role) values ('<uuid>', 'owner') on conflict (user_id) do update set role='owner';`
-6. API: `CDD_SUPABASE_JWT_SECRET` (proyectos con secreto HS256) o `CDD_SUPABASE_JWKS_URL=https://<ref>.supabase.co/auth/v1/.well-known/jwks.json`.
-7. Web: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`; `NEXT_PUBLIC_DEV_AUTH=false`.
+Guía completa paso a paso: **[`docs/SUPABASE.md`](SUPABASE.md)**. Resumen:
+`python -m cdd.migrate` → `python -m cdd.seed` → registrarte en la web → `python -m cdd.make_owner tu@correo` →
+`python -m cdd.doctor`. Referencia de la API de cada tabla: [`docs/API-TABLAS.md`](API-TABLAS.md).
 
 ## Despliegue
 - **Frontend → Vercel**: raíz `apps/web`, comando `npm run build`, variables `NEXT_PUBLIC_*`.

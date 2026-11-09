@@ -48,10 +48,12 @@ Abre http://localhost:3000 → **Entrar** → «Usuario» → **Investigar** (la
 - [Modelo de datos (76 tablas, RLS)](docs/DATA-MODEL.md)
 - [40 agentes](docs/AGENTS.md)
 - [Seguridad](docs/SECURITY.md)
-- [Runbook (local, Supabase, Vercel, worker)](docs/RUNBOOK.md)
+- [Runbook (local, Vercel, worker)](docs/RUNBOOK.md)
+- [Conectar a Supabase paso a paso](docs/SUPABASE.md)
+- [API de las tablas de Supabase (generada)](docs/API-TABLAS.md)
 - [Informe de la fase 1](docs/PHASE-1-REPORT.md)
 - [Hoja de ruta](docs/ROADMAP.md)
-- Contratos versionados: [`packages/contracts/`](packages/contracts)
+- Contratos versionados y tipos de la base: [`packages/contracts/`](packages/contracts)
 
 ## Estructura
 
