@@ -24,7 +24,7 @@ export default function DocPage() {
   return (
     <article>
       <h1 className="text-3xl font-bold">{doc.title}</h1>
-      <dl className="ui card mt-4 grid gap-x-6 gap-y-1 p-4 text-sm md:grid-cols-2">
+      <dl className="ui card prose-left mt-4 grid gap-x-6 gap-y-1 p-4 text-sm md:grid-cols-2">
         <div><dt className="muted inline">Autoría: </dt><dd className="inline">{doc.authors.join(", ")}{doc.institution ? ` (${doc.institution})` : ""}</dd></div>
         <div><dt className="muted inline">Tipo: </dt><dd className="inline">{doc.doc_kind} · {doc.language}</dd></div>
         <div><dt className="muted inline">Licencia: </dt><dd className="inline">{d.license.name}</dd></div>
@@ -40,7 +40,7 @@ export default function DocPage() {
           <section key={c.id} id={c.id}>
             <h2 className="text-xl font-semibold">{c.locator}</h2>
             {c.injection_risk && <p className="ui chip mt-1 bg-rose-100 text-rose-900">Riesgo de inyección detectado: {c.injection_signals.join(", ")} — excluido como evidencia</p>}
-            <p className="mt-2 whitespace-pre-line">{c.content}</p>
+            <p className="prose-left mx-auto mt-2 max-w-3xl whitespace-pre-line">{c.content}</p>
           </section>
         ))}
       </div>

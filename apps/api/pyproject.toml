@@ -1,7 +1,7 @@
 [project]
 name = "cdd-api"
 version = "0.1.0"
-description = "Ciencia de Dios — API, HARNESS SUPRA, Evidence Engine y Experience OS"
+description = "Ciencia y Dios — API, HARNESS SUPRA, Evidence Engine y Experience OS"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",

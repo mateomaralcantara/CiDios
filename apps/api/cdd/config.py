@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # Conectores externos: desactivados por defecto; requieren red saliente permitida.
     connectors_enabled: list[str] = []
     connector_timeout_s: float = 10.0
-    contact_agent: str = "CienciaDeDios/0.1 (research platform)"
+    contact_agent: str = "CienciaYDios/0.1 (research platform)"
 
     default_run_budget_usd: float = 1.0
     worker_poll_interval_s: float = 0.5

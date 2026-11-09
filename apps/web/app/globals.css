@@ -2,6 +2,18 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Diseño centrado. Va en @layer base para que cualquier utilidad de Tailwind (text-left, justify-start…) pueda anularlo. */
+@layer base {
+  main, footer { text-align: center; }
+  main .flex-wrap, main [role="tablist"], main [role="group"] { justify-content: center; }
+  main [class*="max-w-"] { margin-left: auto; margin-right: auto; }
+  main form { margin-left: auto; margin-right: auto; }
+  /* Textos largos, citas, listas y tablas: centrados como bloque, alineados a la izquierda para leerse bien */
+  main table, main blockquote, main .list-disc, main .prose-left, main input, main textarea, main select { text-align: left; }
+  main .list-disc { width: fit-content; max-width: 48rem; margin-left: auto; margin-right: auto; }
+  main table { margin-left: auto; margin-right: auto; }
+}
+
 :root {
   --bg: #fbfaf7; --fg: #1c1917; --muted: #57534e; --card: #ffffff; --line: #e7e5e4; --accent: #7c2d12; --accent-2: #b45309;
 }

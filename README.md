@@ -1,4 +1,4 @@
-# CIENCIA DE DIOS
+# CIENCIA Y DIOS
 
 **Enciclopedia universal inteligente**: investiga, contrasta, documenta, enseña y transforma el conocimiento en
 experiencias interactivas, sin sacrificar el rigor científico, histórico, filosófico o documental.

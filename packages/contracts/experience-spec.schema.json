@@ -474,6 +474,6 @@
   ],
   "title": "ExperienceSpec",
   "type": "object",
-  "$id": "https://cienciadedios.org/contracts/experience-spec/1.0.0",
+  "$id": "https://cienciaydios.org/contracts/experience-spec/1.0.0",
   "x-version": "1.0.0"
 }

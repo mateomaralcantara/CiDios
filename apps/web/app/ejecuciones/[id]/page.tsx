@@ -68,7 +68,7 @@ export default function RunPage() {
         <span className="text-sm">Gasto {formatUsd(r.spent_usd)} / presupuesto {formatUsd(r.budget_usd)} · estimado {formatUsd(r.estimated_usd)}</span>
         {r.result?.experience_id && <Link data-testid="open-experience" className="btn btn-primary" href={`/experiencias/${r.result.experience_id}`}>Abrir experiencia →</Link>}
       </div>
-      <ol className="mt-5 flex flex-wrap gap-1 text-[11px]" aria-label="Cadena de estados">
+      <ol className="mt-5 flex flex-wrap justify-center gap-1 text-[11px]" aria-label="Cadena de estados">
         {d.state_chain.map((s, i) => (
           <li key={s} className={`rounded px-2 py-1 ${i <= chainIdx ? "bg-emerald-600 text-white" : "bg-stone-200 dark:bg-stone-800"} ${s === r.state ? "ring-2 ring-amber-500" : ""}`}>{s}</li>
         ))}
@@ -103,7 +103,7 @@ export default function RunPage() {
         <section>
           <div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Traza en vivo (SSE)</h2>
             <label className="text-xs"><input type="checkbox" checked={showDebug} onChange={(e) => setShowDebug(e.target.checked)} /> llamadas a herramientas</label></div>
-          <ol className="card mt-2 max-h-96 space-y-1 overflow-y-auto p-3 font-mono text-[11px]" aria-live="polite">
+          <ol className="card prose-left mt-2 max-h-96 space-y-1 overflow-y-auto p-3 font-mono text-[11px]" aria-live="polite">
             {events.filter((e) => showDebug || e.level !== "debug").map((e) => (
               <li key={e.id} className={e.level === "error" ? "text-rose-600" : e.level === "warning" ? "text-amber-600" : e.level === "audit" ? "accent" : ""}>
                 {new Date(e.created_at).toLocaleTimeString("es")} [{e.level}] {e.task_key ? `${e.task_key}: ` : ""}{e.message}

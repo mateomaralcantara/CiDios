@@ -53,7 +53,7 @@ def _det_shuffle(options: list[str], seed: str) -> tuple[list[str], int]:
 def _illustration(kind: str | None, title: str) -> Illustration:
     k = kind or "codex"
     return Illustration(kind=k, alt=f"{ILLUSTRATION_ALT.get(k, 'Esquema')} — {title}", provenance=Provenance(
-        creator="Ciencia de Dios (ilustración vectorial generada por código)", kind="schematic_illustration",
+        creator="Ciencia y Dios (ilustración vectorial generada por código)", kind="schematic_illustration",
         license="CC-BY-4.0", is_reconstruction=True,
         notice="Ilustración esquemática original: representa el tipo de soporte, no reproduce el manuscrito real."))
 
@@ -88,7 +88,7 @@ def _questions(stage_events: list, all_events: list, packet: KnowledgePacket, st
                               key=lambda x: hashlib.sha256((seed + x).encode()).hexdigest())[:3]
             opts, idx = _det_shuffle([c.category_label] + distract, seed)
             qs.append(Question(id=f"q-{stage_id}-{i}", claim_id=c.id, kind="epistemic_category",
-                               prompt=f"¿Cómo clasifica Ciencia de Dios esta afirmación? «{c.statement}»", options=opts,
+                               prompt=f"¿Cómo clasifica Ciencia y Dios esta afirmación? «{c.statement}»", options=opts,
                                correct_index=idx,
                                explanation=f"Se clasifica como «{c.category_label}». " + (c.consensus_note or c.insufficient_evidence_note or
                                            "La clasificación depende del tipo de evidencia disponible, no de una preferencia.")))

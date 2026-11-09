@@ -1,4 +1,4 @@
-"""Punto de entrada FastAPI de Ciencia de Dios."""
+"""Punto de entrada FastAPI de Ciencia y Dios."""
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     close_pool()
 
 
-app = FastAPI(title="Ciencia de Dios API", version="0.1.0", lifespan=lifespan,
+app = FastAPI(title="Ciencia y Dios API", version="0.1.0", lifespan=lifespan,
               description="HARNESS SUPRA · Evidence Engine · Experience OS — la evidencia antes que la conclusión.")
 app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, allow_credentials=False,
                    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type"])

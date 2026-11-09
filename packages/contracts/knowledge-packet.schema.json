@@ -543,6 +543,6 @@
   ],
   "title": "KnowledgePacket",
   "type": "object",
-  "$id": "https://cienciadedios.org/contracts/knowledge-packet/1.0.0",
+  "$id": "https://cienciaydios.org/contracts/knowledge-packet/1.0.0",
   "x-version": "1.0.0"
 }

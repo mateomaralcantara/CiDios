@@ -57,7 +57,7 @@ export default function AreaPage() {
                   <ul className="list-disc pl-6">{a.topic.open_questions.map((q) => <li key={q}>{q}</li>)}</ul></section>
               )}
               <section><h2 className="mb-3 text-2xl font-semibold">Bibliografía citada</h2>
-                <ol className="space-y-1 text-sm">{a.bibliography.map((r) => (
+                <ol className="prose-left mx-auto max-w-3xl space-y-1 text-sm">{a.bibliography.map((r) => (
                   <li key={r.id}>{r.authors.join(", ")}. <em>{r.title}</em>{r.container_title ? `. ${r.container_title}` : ""}{r.edition ? `. ${r.edition}` : ""}{r.publisher ? `. ${r.publisher}` : ""}{r.year ? `, ${r.year}` : ""}.
                     {r.identifiers?.url && <> <a className="underline" href={r.identifiers.url} rel="noopener noreferrer" target="_blank">{r.identifiers.url}</a></>}</li>
                 ))}</ol>

@@ -10,7 +10,7 @@ if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     for name, model, ver in (("knowledge-packet", KnowledgePacket, PACKET_VERSION), ("experience-spec", ExperienceSpec, SPEC_VERSION)):
         schema = model.model_json_schema()
-        schema["$id"] = f"https://cienciadedios.org/contracts/{name}/{ver}"
+        schema["$id"] = f"https://cienciaydios.org/contracts/{name}/{ver}"
         schema["x-version"] = ver
         (OUT / f"{name}.schema.json").write_text(json.dumps(schema, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print("→", name, ver)

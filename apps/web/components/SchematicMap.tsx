@@ -27,7 +27,7 @@ export function SchematicMap({ map, active, onSelect }: { map: MapSpec; active?:
           );
         })}
       </svg>
-      <figcaption className="ui muted mt-2 text-xs">{map.notice}</figcaption>
+      <figcaption className="ui muted mt-2 text-center text-xs">{map.notice}</figcaption>
     </figure>
   );
 }

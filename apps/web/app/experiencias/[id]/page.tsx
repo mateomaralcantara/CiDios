@@ -162,13 +162,13 @@ export default function ExperiencePage() {
       </div>
       <ul className="ui muted mt-3 list-disc pl-5 text-xs">{spec.notices.map((n) => <li key={n}>{n}</li>)}</ul>
 
-      <nav className="ui mt-6 flex gap-2 overflow-x-auto pb-2" aria-label="Etapas">
+      <nav className="ui mt-6 flex flex-wrap justify-center gap-2 pb-2" aria-label="Etapas">
         {spec.stages.map((s, i) => {
           const locked = i > unlocked;
           const done = progress?.completed_missions.includes(s.mission?.id ?? "");
           return (
             <button key={s.id} disabled={locked} onClick={() => setStageIdx(i)} data-testid={`stage-${i}`}
-              className={`card min-w-44 shrink-0 p-3 text-left text-sm ${i === stageIdx ? "ring-2 ring-amber-500" : ""} ${locked ? "opacity-50" : ""}`}>
+              className={`card min-w-44 shrink-0 p-3 text-center text-sm ${i === stageIdx ? "ring-2 ring-amber-500" : ""} ${locked ? "opacity-50" : ""}`}>
               <span className="block text-xs muted">{locked ? "🔒 Bloqueada" : done && gamified ? "✓ Superada" : `Etapa ${i + 1}`} · {s.range_label}</span>
               <span className="font-semibold">{s.title}</span>
             </button>);
@@ -179,12 +179,11 @@ export default function ExperiencePage() {
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_380px]">
           <section>
             <p className="text-lg">{stage.intro}</p>
-            <ol className="relative mt-6 space-y-5 border-l-2 pl-6" style={{ borderColor: "var(--line)" }}>
+            <ol className="relative mx-auto mt-6 max-w-3xl space-y-5">
               {stageEvents.map((e) => {
                 const c = claims.get(e.claim_id)!;
                 return (
                   <li key={e.claim_id} className="card relative p-4" data-testid="timeline-event">
-                    <span className="absolute -left-[33px] top-5 h-4 w-4 rounded-full border-2" style={{ background: "var(--bg)", borderColor: "var(--accent)" }} />
                     <div className="ui flex flex-wrap items-center gap-2 text-xs">
                       <span className="chip bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900">{e.date_label}</span>
                       <span className="muted">precisión: {c.date?.precision_label}</span>

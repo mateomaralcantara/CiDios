@@ -45,9 +45,9 @@ export function IllustrationSvg({ kind, title, size = 96 }: { kind: string; titl
 
 export function IllustrationFigure({ ill }: { ill: Ill }) {
   return (
-    <figure className="flex items-start gap-3">
+    <figure className="flex flex-col items-center gap-2">
       <IllustrationSvg kind={ill.kind} title={ill.alt} />
-      <figcaption className="ui muted text-[11px] leading-snug">
+      <figcaption className="ui muted max-w-md text-[11px] leading-snug">
         <strong>Procedencia:</strong> {ill.provenance.creator} · {ill.provenance.license}
         <br />{ill.provenance.notice}
       </figcaption>

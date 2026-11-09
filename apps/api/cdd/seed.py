@@ -22,9 +22,9 @@ from .topics import AREAS
 CORPUS_DIR = Path(os.environ.get("CDD_CORPUS_DIR", Path(__file__).resolve().parents[3] / "corpus"))
 
 DEV_USERS = {
-    "owner": ("00000000-0000-4000-8000-000000000001", "propietario@cienciadedios.local", "owner"),
-    "user": ("00000000-0000-4000-8000-000000000002", "usuario@cienciadedios.local", "user"),
-    "user2": ("00000000-0000-4000-8000-000000000003", "usuaria2@cienciadedios.local", "user"),
+    "owner": ("00000000-0000-4000-8000-000000000001", "propietario@cienciaydios.local", "owner"),
+    "user": ("00000000-0000-4000-8000-000000000002", "usuario@cienciaydios.local", "user"),
+    "user2": ("00000000-0000-4000-8000-000000000003", "usuaria2@cienciaydios.local", "user"),
 }
 
 
@@ -120,7 +120,7 @@ def seed_corpus(conn: Connection, name: str = "biblical_transmission") -> dict[s
         try:
             res = ingest_document(conn, DocumentInput(
                 slug=d["slug"], title=d["title"], body=body, doc_kind="editorial_note", license_code="CC-BY-4.0",
-                authors=["Equipo editorial de Ciencia de Dios"], institution="Ciencia de Dios", language="es",
+                authors=["Equipo editorial de Ciencia y Dios"], institution="Ciencia y Dios", language="es",
                 rights_statement="Nota editorial original del proyecto, CC BY 4.0. Resume fuentes secundarias citadas.",
                 provenance={"origin": "corpus/" + name + "/" + d["file"], "method": "redacción editorial",
                             "review": "pendiente de revisión por especialista"},
