@@ -26,9 +26,12 @@ from ..db import service_tx, user_tx
 from ..experience.contracts import canonical_sha256
 from ..security.injection import scan
 from . import budget
+from .agents.bibliography import provenance_auditor
+from .agents.discovery import bibliographic_discoverer
 from .agents.epistemic import citation_verifier, consensus_analyst
 from .agents.experience import pedagogical_architect, timeline_director
-from .agents.governance import budget_custodian, dag_planner, intent_interpreter
+from .agents.extraction import area_specialist
+from .agents.governance import budget_custodian, dag_planner, intent_interpreter, model_router
 from .agents.library import universal_librarian
 from .agents.quality import contract_validator
 from .context import AgentContext, NoEvidence, log_event
@@ -39,6 +42,10 @@ AGENT_FUNCTIONS = {
     "universal_librarian": universal_librarian, "consensus_analyst": consensus_analyst,
     "citation_verifier": citation_verifier, "timeline_director": timeline_director,
     "pedagogical_architect": pedagogical_architect, "contract_validator": contract_validator,
+    "bibliographic_discoverer": bibliographic_discoverer, "provenance_auditor": provenance_auditor,
+    "model_router": model_router,
+    **{code: area_specialist for code in ("biblical_historian", "comparative_theologian", "philosopher_of_religion", "cosmologist",
+                                          "fundamental_physicist", "evolutionary_biologist", "archaeologist", "neuro_psychologist")},
 }
 
 BOOTSTRAP = [
@@ -240,14 +247,30 @@ def execute_task(run_id: str, task_key: str) -> None:
             return execute_task(run_id, task_key)
         raise Halt("FAILED", err) from e
     elapsed = time.monotonic() - started
-    cost = estimate
+    usages = (output.get("_usage") or []) if isinstance(output, dict) else []
+    llm_usd = Decimal(str(round(sum(u.get("usd", 0) for u in usages), 6)))
+    measured = bool(usages) or agent["execution_model"] in ("llm", "hybrid")
+    cost = llm_usd if measured else estimate   # agentes con LLM: solo se cobra lo realmente consumido
     digest = canonical_sha256(output)
     with service_tx() as conn:
         conn.execute("""update public.harness_tasks set status='succeeded', output=%s, cost_usd=%s, finished_at=now()
                         where id=%s""", (json.dumps(output, default=str), cost, task["id"]))
-        budget.record(conn, run_id=run_id, user_id=str(run["owner_id"]), agent_code=agent["code"], kind="actual",
-                      amount=cost, model=agent["execution_model"], note=f"{task_key} en {elapsed:.2f}s",
-                      apply_to_run=False)  # ya reservado atómicamente antes de ejecutar
+        if measured:
+            # Coste real del LLM (tokens medidos por el proveedor); se ajusta la reserva previa
+            for u in usages:
+                budget.record(conn, run_id=run_id, user_id=str(run["owner_id"]), agent_code=agent["code"], kind="actual",
+                              amount=Decimal(str(u.get("usd", 0))), provider=u.get("provider", "llm"), model=u.get("model", ""),
+                              input_tokens=int(u.get("input_tokens", 0)), output_tokens=int(u.get("output_tokens", 0)),
+                              note=f"{task_key}", apply_to_run=False)
+            conn.execute("update public.harness_runs set spent_usd = spent_usd + %s where id=%s", (cost - estimate, run_id))
+            if not usages:
+                budget.record(conn, run_id=run_id, user_id=str(run["owner_id"]), agent_code=agent["code"], kind="actual",
+                              amount=Decimal(0), model=agent["execution_model"], note=f"{task_key}: sin llamadas al LLM",
+                              apply_to_run=False)
+        else:
+            budget.record(conn, run_id=run_id, user_id=str(run["owner_id"]), agent_code=agent["code"], kind="actual",
+                          amount=cost, model=agent["execution_model"], note=f"{task_key} en {elapsed:.2f}s",
+                          apply_to_run=False)  # ya reservado atómicamente antes de ejecutar
         conn.execute("""insert into public.harness_checkpoints (run_id, task_key, state, output_sha256, snapshot)
                         values (%s,%s,%s,%s,%s) on conflict (run_id, task_key) do update
                         set output_sha256=excluded.output_sha256, snapshot=excluded.snapshot, created_at=now()""",

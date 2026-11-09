@@ -9,7 +9,46 @@ import { IllustrationFigure } from "@/components/Illustration";
 import { SchematicMap } from "@/components/SchematicMap";
 import { API_URL, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { STANCE_LABEL, type Experience, type Mission, type PacketClaim, type Progress } from "@/lib/types";
+import { STANCE_LABEL, TIER_STYLE, type BibEntry, type Experience, type KnowledgePacket, type Mission, type PacketClaim, type Progress } from "@/lib/types";
+
+function OriginBadge({ c }: { c: PacketClaim }) {
+  if (c.origin !== "llm_extracted") return null;
+  return <span className="chip border border-dashed" title="Afirmación propuesta por un modelo a partir de citas verificadas literalmente">
+    propuesta por IA ({c.generated_by?.model ?? "LLM"}) · pendiente de revisión</span>;
+}
+
+function Bibliography({ packet }: { packet: KnowledgePacket }) {
+  const bib = packet.bibliography ?? [];
+  if (!bib.length) return null;
+  const m = packet.bibliography_metrics ?? {};
+  const d = packet.dimensions ?? {};
+  return (
+    <section className="card mx-auto mt-10 max-w-4xl p-5" data-testid="bibliography">
+      <h2 className="text-2xl font-semibold">Bibliografía y sustento</h2>
+      <p className="ui muted mt-1 text-xs">
+        {m.references} referencias · {m.claims_with_peer_reviewed_support_pct ?? 0} % de afirmaciones con respaldo revisado por pares ·
+        {" "}{m.claims_with_expert_support_pct ?? 0} % con respaldo de expertos{m.evidence_excluded_retracted ? ` · ${m.evidence_excluded_retracted} citas de obras retractadas excluidas` : ""}
+      </p>
+      <div className="ui mt-3 grid gap-2 text-xs md:grid-cols-3">
+        <div className="card p-2"><strong>1 · Textos publicados</strong><br />{d.published ? `${d.published.documents} obras (${d.published.sources.join(", ")})` : "no consultado"}</div>
+        <div className="card p-2"><strong>2 · Expertos del área</strong><br />{d.experts ? (d.experts.experts.length ? d.experts.experts.map((x) => `${x.name} (h=${x.h_index})`).join(", ") : (d.experts.note ?? "ninguno identificado")) : "no consultado"}</div>
+        <div className="card p-2"><strong>3 · HARNESS de bibliografía</strong><br />{m.doi_resolved ?? 0} DOI resueltos · {Object.entries(m.by_tier ?? {}).map(([k, v]) => `${v} ${k}`).join(" · ")}</div>
+      </div>
+      <ol className="prose-left mt-4 space-y-2 text-sm">
+        {bib.map((b: BibEntry) => (
+          <li key={b.key} id={`ref-${b.key}`} className="flex gap-2">
+            <span className="ui font-semibold">[{b.key}]</span>
+            <span>{b.apa.replace(/\*/g, "")}{" "}
+              <span className={`ui chip ${TIER_STYLE[b.tier] ?? ""}`}>{b.tier_label}</span>
+              {b.identifier_check === "resolved" && <span className="ui chip ml-1 bg-stone-100 dark:bg-stone-800">DOI verificado</span>}
+              {b.cited_by ? <span className="ui muted ml-1 text-xs">· citada {b.cited_by} veces</span> : null}
+            </span>
+          </li>))}
+      </ol>
+      {d.llm && <p className="ui muted mt-3 text-xs">Análisis asistido por {d.llm.model}: {d.llm.accepted} de {d.llm.proposed} afirmaciones propuestas superaron la verificación literal de citas.{d.llm.unanswered ? ` Sin respuesta en las fuentes: ${d.llm.unanswered}` : ""}</p>}
+    </section>
+  );
+}
 
 interface Feedback { question_id: string; correct: boolean; correct_index: number; explanation: string }
 
@@ -19,6 +58,7 @@ function Sources({ c, onClose }: { c: PacketClaim; onClose: () => void }) {
       <aside className="h-full w-full max-w-xl overflow-y-auto p-5" style={{ background: "var(--bg)" }} onClick={(e) => e.stopPropagation()} data-testid="sources-panel">
         <button className="btn ui float-right" onClick={onClose} autoFocus>Cerrar</button>
         <h2 className="text-xl font-semibold">{c.subject ?? c.slug}</h2>
+        <div className="ui mt-1 text-xs"><OriginBadge c={c} /></div>
         <p className="mt-2">{c.statement}</p>
         <div className="ui mt-2 flex flex-wrap gap-2 text-xs">
           <CategoryChip category={c.category} label={c.category_label} />
@@ -31,7 +71,9 @@ function Sources({ c, onClose }: { c: PacketClaim; onClose: () => void }) {
         <h3 className="ui mt-5 font-semibold">Evidencias ({c.evidence.length})</h3>
         <div className="mt-2 space-y-3">{c.evidence.map((e) => (
           <blockquote key={e.id} className="card p-3 text-sm">
-            <span className="ui chip mr-2 bg-stone-100 dark:bg-stone-800">{STANCE_LABEL[e.stance]}</span>“{e.fragment}”
+            {e.citation_key ? <span className="ui mr-1 font-semibold">[{e.citation_key}]</span> : null}
+            <span className="ui chip mr-2 bg-stone-100 dark:bg-stone-800">{STANCE_LABEL[e.stance]}</span>
+            {e.tier ? <span className={`ui chip mr-2 ${TIER_STYLE[e.tier] ?? ""}`}>{e.tier}</span> : null}“{e.fragment}”
             <div className="ui muted mt-2 text-xs">
               Fuente: <Link className="underline" href={`/biblioteca/${e.document.id}`}>{e.document.title}</Link>, «{e.locator}» · licencia {e.document.license_code}
               {e.reference && <><br />Resume: {e.reference.authors.join(", ")}, <em>{e.reference.title}</em>{e.reference.container_title ? `, ${e.reference.container_title}` : ""}{e.reference.year ? ` (${e.reference.year})` : ""}</>}
@@ -134,9 +176,11 @@ export default function ExperiencePage() {
         {spec.sections.map((s) => (
           <section key={s.heading} className="mt-8"><h2 className="text-2xl font-semibold">{s.heading}</h2><p className="muted">{s.intro}</p>
             {s.claim_ids.map((cid) => { const c = claims.get(cid)!; return (
-              <div key={cid} className="card mt-3 p-4"><CategoryChip category={c.category} label={c.category_label} /> {c.date && <span className="ui muted text-xs">{c.date.label}</span>}
-                <p className="mt-1">{c.statement}</p><button className="ui mt-2 text-sm underline" onClick={() => setSources(c)}>Fuentes ({c.evidence.length})</button></div>); })}
+              <div key={cid} className="card mt-3 p-4"><CategoryChip category={c.category} label={c.category_label} /> <OriginBadge c={c} /> {c.date && <span className="ui muted text-xs">{c.date.label}</span>}
+                <p className="mt-1">{c.statement}{" "}<span className="ui muted text-xs">{[...new Set(c.evidence.map((e) => e.citation_key).filter(Boolean))].map((k) => `[${k}]`).join("")}</span></p>
+                <button className="ui mt-2 text-sm underline" onClick={() => setSources(c)}>Fuentes ({c.evidence.length})</button></div>); })}
           </section>))}
+        <Bibliography packet={exp.knowledge_packet} />
         {sources && <Sources c={sources} onClose={() => setSources(null)} />}
       </article>
     );
@@ -232,6 +276,7 @@ export default function ExperiencePage() {
           </aside>
         </div>
       )}
+      <Bibliography packet={packet} />
       {sources && <Sources c={sources} onClose={() => setSources(null)} />}
     </div>
   );

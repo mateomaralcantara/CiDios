@@ -41,7 +41,12 @@ def seed_agents(conn: Connection) -> None:
                on conflict (code) do update set family=excluded.family, name_es=excluded.name_es, version=excluded.version,
                  status=excluded.status, execution_model=excluded.execution_model, allowed_tools=excluded.allowed_tools,
                  input_contract=excluded.input_contract, output_contract=excluded.output_contract, rules=excluded.rules,
-                 fallback=excluded.fallback, updated_at=now()""",
+                 fallback=excluded.fallback, updated_at=now(),
+                 -- un agente que pasa a estar implementado queda habilitado con su coste por defecto
+                 enabled = case when agent_definitions.status <> 'operational' and excluded.status = 'operational'
+                                then true else agent_definitions.enabled end,
+                 unit_cost_usd = case when agent_definitions.status <> 'operational' and excluded.status = 'operational'
+                                then excluded.unit_cost_usd else agent_definitions.unit_cost_usd end""",
             (a.code, a.number, a.family, a.name_es, a.version, a.status, a.status == "operational", a.execution_model,
              list(a.allowed_tools), a.input_contract or "—", a.output_contract or "—", list(a.rules), a.unit_cost_usd,
              a.max_cost_per_run_usd, a.fallback),

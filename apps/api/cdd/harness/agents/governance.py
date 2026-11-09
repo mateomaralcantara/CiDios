@@ -6,9 +6,12 @@ import unicodedata
 from decimal import Decimal
 from typing import Any
 
+from ...config import get_settings
 from ...db import service_tx
+from ...providers import gemini
 from .. import budget
 from ..context import AgentContext
+from ..registry import AREA_SPECIALIST, DEFAULT_SPECIALIST
 
 SUPPORTED_MODALITIES = {"article", "comparison_matrix", "timeline", "gamified_timeline"}
 
@@ -110,8 +113,28 @@ def build_plan(intent: dict[str, Any], prompt: str, operational: set[str]) -> di
         tasks.append({"key": key, "agent": "universal_librarian", "phase": "ACQUIRING", "depends_on": [],
                       "input": {"queries": qs + ([prompt] if name == groups[0][0] else []), "topic": intent["topic"]},
                       "completion_criteria": "Al menos un fragmento recuperado o ausencia documentada"})
+    # Dimensiones 1 (textos publicados) y 2 (expertos) cuando hay repositorios externos habilitados
+    s = get_settings()
+    if s.connectors_enabled:
+        tasks.append({"key": "acquire_published", "agent": "bibliographic_discoverer", "phase": "ACQUIRING", "depends_on": [],
+                      "input": {"mode": "published", "question": prompt, "topic": intent["topic"]},
+                      "completion_criteria": "Obras publicadas del área incorporadas con procedencia, o ausencia documentada"})
+        acq_keys.append("acquire_published")
+        if "openalex" in s.connectors_enabled:
+            tasks.append({"key": "acquire_experts", "agent": "bibliographic_discoverer", "phase": "ACQUIRING",
+                          "depends_on": ["acquire_published"], "input": {"mode": "experts", "question": prompt, "topic": intent["topic"]},
+                          "completion_criteria": "Obras revisadas por pares de autores expertos (índice h ≥ umbral), o ausencia documentada"})
+            acq_keys.append("acquire_experts")
+    analysis_deps = list(acq_keys)
+    specialist = AREA_SPECIALIST.get(intent["topic"] or "", DEFAULT_SPECIALIST)
+    if gemini.configured() and specialist in operational:
+        tasks.append({"key": "extract", "agent": specialist, "phase": "ANALYZING", "depends_on": list(acq_keys),
+                      "input": {"question": prompt, "topic": intent["topic"]},
+                      "completion_criteria": "Afirmaciones propuestas con citas literales verificadas"})
+        analysis_deps.append("extract")
+    extra_package_deps = [k for k in analysis_deps if k in ("acquire_published", "acquire_experts", "extract")]
     tasks += [
-        {"key": "analyze", "agent": "consensus_analyst", "phase": "ANALYZING", "depends_on": acq_keys,
+        {"key": "analyze", "agent": "consensus_analyst", "phase": "ANALYZING", "depends_on": analysis_deps,
          "input": {"mode": "analyze", "topic": intent["topic"]},
          "completion_criteria": "Afirmaciones candidatas agrupadas y cobertura temporal evaluada"},
         {"key": "cross_examine", "agent": "consensus_analyst", "phase": "CROSS_EXAMINING", "depends_on": ["analyze"],
@@ -119,7 +142,10 @@ def build_plan(intent: dict[str, Any], prompt: str, operational: set[str]) -> di
          "completion_criteria": "Cada afirmación con balance de evidencia, perspectivas e incertidumbres"},
         {"key": "verify", "agent": "citation_verifier", "phase": "VERIFYING", "depends_on": ["cross_examine"],
          "input": {"mode": "verify"}, "completion_criteria": "Toda cita comprobada literalmente contra su fuente"},
-        {"key": "package", "agent": "citation_verifier", "phase": "PACKAGING", "depends_on": ["verify", "cross_examine", "analyze"],
+        {"key": "bibliography", "agent": "provenance_auditor", "phase": "VERIFYING", "depends_on": ["verify"], "input": {},
+         "completion_criteria": "Cada evidencia con referencia numerada, DOI resueltos y obras retractadas excluidas"},
+        {"key": "package", "agent": "citation_verifier", "phase": "PACKAGING",
+         "depends_on": ["verify", "cross_examine", "analyze", "bibliography"] + extra_package_deps,
          "input": {"mode": "package"}, "completion_criteria": "KnowledgePacket con hash de integridad"},
     ]
     renderer = "timeline_director" if intent["modality"] in ("timeline", "gamified_timeline") else "pedagogical_architect"
@@ -164,3 +190,9 @@ def budget_custodian(ctx: AgentContext) -> dict[str, Any]:
     requires_approval = estimate > threshold and run["approved_at"] is None
     return {"estimate_usd": str(estimate), "budget_usd": str(run["budget_usd"]), "within_budget": within,
             "requires_approval": requires_approval, "auto_approve_below_usd": str(threshold)}
+
+
+def model_router(ctx: AgentContext) -> dict[str, Any]:
+    ctx.tool("providers.list")
+    s = get_settings()
+    return {"provider": "gemini" if gemini.configured() else "none", "model": s.gemini_model if gemini.configured() else None}

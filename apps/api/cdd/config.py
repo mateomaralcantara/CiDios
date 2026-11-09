@@ -26,14 +26,31 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
-    # Proveedores de IA (opcionales). Sin clave, los agentes operan en modo determinista.
-    anthropic_api_key: str = Field(default="", repr=False)
-    anthropic_model: str = "claude-sonnet-5-5"
+    # --- LLM: Google Gemini (opcional). Sin clave, los agentes operan en modo determinista. ---
+    gemini_api_key: str = Field(default="", repr=False)
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
+    gemini_timeout_s: float = 90.0
+    # Precios en USD por millón de tokens: compruébalos en https://ai.google.dev/pricing y ajústalos.
+    gemini_input_usd_per_mtok: float = 0.30
+    gemini_output_usd_per_mtok: float = 2.50
+    gemini_thinking_budget: int | None = None   # p. ej. 0 para desactivar el «razonamiento» en modelos flash
+    llm_max_chunks: int = 24                    # fragmentos máximos que se envían al modelo por investigación
+    llm_max_claims: int = 12                    # afirmaciones máximas que se le piden
 
-    # Conectores externos: desactivados por defecto; requieren red saliente permitida.
-    connectors_enabled: list[str] = []
-    connector_timeout_s: float = 10.0
-    contact_agent: str = "CienciaYDios/0.1 (research platform)"
+    # Opcional (aún no lo usan los agentes)
+    anthropic_api_key: str = Field(default="", repr=False)
+
+    # --- Fuentes externas (dimensiones 1 y 2) ---
+    connectors_enabled: list[str] = ["openalex", "crossref", "europepmc", "arxiv"]
+    connector_timeout_s: float = 20.0
+    openalex_api_key: str = Field(default="", repr=False)   # gratuita: https://openalex.org (Authorization: Bearer)
+    contact_email: str = ""                                  # tu correo para el «polite pool» de Crossref/OpenAlex (opcional)
+    contact_agent: str = "CienciaYDios/0.2 (research platform)"
+    published_max_works: int = 10                           # dimensión 1: obras publicadas a incorporar
+    experts_max_authors: int = 5                            # dimensión 2: expertos a consultar
+    experts_min_h_index: int = 15                           # umbral de experto (índice h en OpenAlex)
+    experts_works_per_author: int = 3
 
     default_run_budget_usd: float = 1.0
     worker_poll_interval_s: float = 0.5

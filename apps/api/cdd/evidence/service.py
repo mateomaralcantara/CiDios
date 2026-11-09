@@ -31,6 +31,7 @@ PRECISION_LABELS_ES = {
 _CLAIM_COLS = """c.id, c.slug, c.statement, c.asserted_by, c.discipline, c.category::text as category, c.is_event,
   c.date_start, c.date_end, c.date_precision::text as date_precision, c.date_label, c.consensus_note,
   c.insufficient_evidence_note, c.future_research_note, c.review_status::text as review_status, c.content_sha256,
+  c.origin, c.generated_by,
   c.topic_id, pe.name as place_name, pe.attributes as place_attrs, se.name as subject_name,
   se.attributes as subject_attrs"""
 

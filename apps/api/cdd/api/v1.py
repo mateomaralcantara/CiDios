@@ -525,11 +525,15 @@ def providers(p: Principal = Depends(require_owner)) -> dict[str, Any]:
     return {
         "models": [
             {"provider": "local", "model": "deterministic", "configured": True, "used_by": "agentes operativos actuales"},
-            {"provider": "anthropic", "model": s.anthropic_model, "configured": bool(s.anthropic_api_key),
-             "key_hint": mask_secret(s.anthropic_api_key), "used_by": "ninguno: integración con proveedores LLM aún no implementada"},
+            {"provider": "gemini", "model": s.gemini_model, "configured": bool(s.gemini_api_key),
+             "key_hint": mask_secret(s.gemini_api_key),
+             "used_by": "planificación de consultas (#8) y especialistas del área (#15–#22)" if s.gemini_api_key
+                        else "sin clave: los agentes funcionan en modo determinista",
+             "price_usd_per_mtok": {"input": s.gemini_input_usd_per_mtok, "output": s.gemini_output_usd_per_mtok}},
         ],
         "embeddings": {"model": "hashing-lexical-v1", "dim": 384, "neural": False},
-        "connectors": [{"name": n, "implemented": True, "enabled": n in s.connectors_enabled} for n in CONNECTORS]
+        "connectors": [{"name": n, "implemented": True, "enabled": n in s.connectors_enabled,
+                        **({"key_configured": bool(s.openalex_api_key)} if n == "openalex" else {})} for n in CONNECTORS]
                       + [{"name": n, "implemented": False, "enabled": False} for n in PLANNED],
         "supabase": {"url": s.supabase_url, "jwt_secret_configured": bool(s.supabase_jwt_secret),
                      "jwks_configured": bool(s.supabase_jwks_url)},

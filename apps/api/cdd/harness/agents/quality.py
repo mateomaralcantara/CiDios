@@ -31,6 +31,10 @@ def validate(packet_raw: dict, spec_raw: dict) -> list[dict[str, Any]]:
     check("references_only_packet_claims", not unknown, f"desconocidas: {unknown}" if unknown else "")
     altered = [e.claim_id for e in spec.events if e.claim_id in ids and e.narration != ids[e.claim_id].statement]
     check("statements_unaltered", not altered, f"alteradas: {altered}" if altered else "")
+    entry_keys = {b.key for b in packet.bibliography}
+    unbound = [e.id for c in packet.claims for e in c.evidence if packet.bibliography and e.citation_key not in entry_keys]
+    check("citations_bound_to_bibliography", not unbound, f"evidencias sin referencia: {len(unbound)}" if unbound else "")
+    check("no_retracted_sources", not any(b.retracted for b in packet.bibliography))
     check("every_claim_has_verified_support", all(any(ev.stance == "supports" and ev.verification == "fragment_verified"
                                                        for ev in c.evidence) for c in packet.claims))
     if spec.modality in ("timeline", "gamified_timeline"):

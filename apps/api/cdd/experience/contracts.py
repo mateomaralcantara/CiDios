@@ -12,7 +12,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-PACKET_VERSION = "1.0.0"
+PACKET_VERSION = "1.1.0"
 SPEC_VERSION = "1.0.0"
 
 
@@ -65,6 +65,8 @@ class EvidenceItem(_M):
     reference: BibRef | None = None
     verification: Literal["fragment_verified", "fragment_mismatch", "unverified", "reference_missing"]
     verification_notes: list[str] = []
+    citation_key: int | None = None      # número de la referencia en la bibliografía del paquete
+    tier: str | None = None              # procedencia de la fuente
 
 
 class PerspectiveItem(_M):
@@ -92,8 +94,33 @@ class PacketClaim(_M):
     insufficient_evidence_note: str = ""
     future_research_note: str = ""
     review_status: str
+    origin: Literal["curated", "llm_extracted"] = "curated"
+    generated_by: dict = {}
     evidence: list[EvidenceItem]
     perspectives: list[PerspectiveItem] = []
+
+
+class BibEntry(_M):
+    key: int
+    ref_id: str | None = None
+    document_id: str | None = None
+    authors: list[str] = []
+    year: int | str | None = None
+    title: str
+    container_title: str | None = None
+    publisher: str | None = None
+    edition: str | None = None
+    ref_type: str | None = None
+    doi: str | None = None
+    url: str | None = None
+    tier: str
+    tier_label: str
+    identifier_check: str | None = None
+    cited_by: int | None = None
+    retracted: bool = False
+    connector: str | None = None
+    apa: str
+    chicago: str
 
 
 class KnowledgePacket(_M):
@@ -107,6 +134,9 @@ class KnowledgePacket(_M):
     uncertainties: list[str] = []
     limitations: list[str] = []
     coverage: dict = {}
+    bibliography: list[BibEntry] = []
+    bibliography_metrics: dict = {}
+    dimensions: dict = {}                # resumen de las 3 dimensiones de búsqueda
     sha256: str = ""
 
 

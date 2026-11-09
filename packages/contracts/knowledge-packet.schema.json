@@ -1,5 +1,204 @@
 {
   "$defs": {
+    "BibEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "integer"
+        },
+        "ref_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref Id"
+        },
+        "document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Id"
+        },
+        "authors": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Authors",
+          "type": "array"
+        },
+        "year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Year"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "container_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Container Title"
+        },
+        "publisher": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publisher"
+        },
+        "edition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Edition"
+        },
+        "ref_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref Type"
+        },
+        "doi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Doi"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "tier": {
+          "title": "Tier",
+          "type": "string"
+        },
+        "tier_label": {
+          "title": "Tier Label",
+          "type": "string"
+        },
+        "identifier_check": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Identifier Check"
+        },
+        "cited_by": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cited By"
+        },
+        "retracted": {
+          "default": false,
+          "title": "Retracted",
+          "type": "boolean"
+        },
+        "connector": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Connector"
+        },
+        "apa": {
+          "title": "Apa",
+          "type": "string"
+        },
+        "chicago": {
+          "title": "Chicago",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "tier",
+        "tier_label",
+        "apa",
+        "chicago"
+      ],
+      "title": "BibEntry",
+      "type": "object"
+    },
     "BibRef": {
       "additionalProperties": false,
       "properties": {
@@ -243,6 +442,30 @@
           },
           "title": "Verification Notes",
           "type": "array"
+        },
+        "citation_key": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citation Key"
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tier"
         }
       },
       "required": [
@@ -360,6 +583,21 @@
           "title": "Review Status",
           "type": "string"
         },
+        "origin": {
+          "default": "curated",
+          "enum": [
+            "curated",
+            "llm_extracted"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "generated_by": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Generated By",
+          "type": "object"
+        },
         "evidence": {
           "items": {
             "$ref": "#/$defs/EvidenceItem"
@@ -463,7 +701,7 @@
   "additionalProperties": false,
   "properties": {
     "packet_version": {
-      "default": "1.0.0",
+      "default": "1.1.0",
       "title": "Packet Version",
       "type": "string"
     },
@@ -528,6 +766,26 @@
       "title": "Coverage",
       "type": "object"
     },
+    "bibliography": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/BibEntry"
+      },
+      "title": "Bibliography",
+      "type": "array"
+    },
+    "bibliography_metrics": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Bibliography Metrics",
+      "type": "object"
+    },
+    "dimensions": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Dimensions",
+      "type": "object"
+    },
     "sha256": {
       "default": "",
       "title": "Sha256",
@@ -543,6 +801,6 @@
   ],
   "title": "KnowledgePacket",
   "type": "object",
-  "$id": "https://cienciaydios.org/contracts/knowledge-packet/1.0.0",
-  "x-version": "1.0.0"
+  "$id": "https://cienciaydios.org/contracts/knowledge-packet/1.1.0",
+  "x-version": "1.1.0"
 }

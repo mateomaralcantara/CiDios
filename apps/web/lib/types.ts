@@ -11,6 +11,13 @@ export interface EvidenceItem {
   id: string; stance: Stance; fragment: string; locator: string;
   document: { id: string; title: string; slug?: string | null; license_code: string; review_status: string; kind: string };
   reference?: BibRef | null; verification: string; verification_notes: string[];
+  citation_key?: number | null; tier?: string | null;
+}
+
+export interface BibEntry {
+  key: number; ref_id?: string | null; document_id?: string | null; authors: string[]; year?: number | string | null; title: string;
+  container_title?: string | null; doi?: string | null; url?: string | null; tier: string; tier_label: string;
+  identifier_check?: string | null; cited_by?: number | null; retracted: boolean; connector?: string | null; apa: string; chicago: string;
 }
 
 export interface Perspective { label: string; tradition: string; summary: string; held_by: string }
@@ -22,13 +29,32 @@ export interface PacketClaim {
   place?: { name: string; lat?: number | null; lon?: number | null } | null;
   subject?: string | null; illustration_kind?: string | null; consensus_note: string; insufficient_evidence_note: string;
   future_research_note: string; review_status: string; evidence: EvidenceItem[]; perspectives: Perspective[];
+  origin?: "curated" | "llm_extracted"; generated_by?: { provider?: string; model?: string };
 }
 
 export interface KnowledgePacket {
   packet_version: string; run_id: string; question: string; topic: string | null; generated_at: string;
   claims: PacketClaim[]; excluded_claims: { claim_id: string; reason: string }[]; uncertainties: string[];
   limitations: string[]; coverage: { by_era?: Record<string, number>; gaps?: string[] }; sha256: string;
+  bibliography?: BibEntry[];
+  bibliography_metrics?: { references?: number; by_tier?: Record<string, number>; claims_with_peer_reviewed_support_pct?: number;
+    claims_with_expert_support_pct?: number; evidence_excluded_retracted?: number; doi_resolved?: number };
+  dimensions?: {
+    library?: { claims_curated: number };
+    published?: { documents: number; sources: string[]; queries: string[]; candidates_seen: number };
+    experts?: { experts: { name: string; h_index: number; institution?: string }[]; documents: number; note?: string | null };
+    llm?: { model: string; proposed: number; accepted: number; unanswered: string };
+  };
 }
+
+export const TIER_STYLE: Record<string, string> = {
+  expert_peer_reviewed: "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200",
+  peer_reviewed: "bg-sky-100 text-sky-900 dark:bg-sky-900/40 dark:text-sky-200",
+  published: "bg-stone-200 text-stone-900 dark:bg-stone-700 dark:text-stone-100",
+  preprint: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200",
+  editorial: "bg-violet-100 text-violet-900 dark:bg-violet-900/40 dark:text-violet-200",
+  user: "bg-stone-100 text-stone-800 dark:bg-stone-800 dark:text-stone-200",
+};
 
 export interface Question {
   id: string; claim_id: string; kind: string; prompt: string; options: string[]; correct_index: number; explanation: string;

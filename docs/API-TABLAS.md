@@ -111,6 +111,15 @@ RLS: **activado**
 | `identifier_check` | `text` | no | `'unverified_offline'::text` |
 | `checked_at` | `timestamp with time zone` | sí |  |
 | `created_at` | `timestamp with time zone` | no | `now()` |
+| `tier` | `text` | no | `'published'::text` |
+| `doi` | `text` | sí |  |
+| `url` | `text` | sí |  |
+| `openalex_id` | `text` | sí |  |
+| `venue_type` | `text` | sí |  |
+| `cited_by_count` | `integer` | sí |  |
+| `is_retracted` | `boolean` | no | `false` |
+| `retraction_checked_at` | `timestamp with time zone` | sí |  |
+| `source_connector` | `text` | sí |  |
 
 **Claves y relaciones**
 
@@ -201,13 +210,17 @@ RLS: **activado**
 | `created_by` | `uuid` | sí |  |
 | `created_at` | `timestamp with time zone` | no | `now()` |
 | `updated_at` | `timestamp with time zone` | no | `now()` |
+| `origin` | `text` | no | `'curated'::text` |
+| `generated_by` | `jsonb` | no | `'{}'::jsonb` |
+| `run_id` | `uuid` | sí |  |
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (subject_entity_id) REFERENCES entities(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (place_entity_id) REFERENCES entities(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL`
-- Foránea: `FOREIGN KEY (subject_entity_id) REFERENCES entities(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL`
 - Primaria: `PRIMARY KEY (id)`
 - Única: `UNIQUE (slug)`
 
@@ -251,8 +264,8 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
 - Primaria: `PRIMARY KEY (id)`
 
 **Políticas RLS**
@@ -346,6 +359,8 @@ RLS: **activado**
 | `cites` | `uuid[]` | no | `'{}'::uuid[]` |
 | `created_at` | `timestamp with time zone` | no | `now()` |
 | `updated_at` | `timestamp with time zone` | no | `now()` |
+| `source_tier` | `text` | no | `'editorial'::text` |
+| `doi` | `text` | sí |  |
 
 **Claves y relaciones**
 
@@ -474,9 +489,9 @@ RLS: **activado**
 
 **Claves y relaciones**
 
+- Foránea: `FOREIGN KEY (chunk_id) REFERENCES document_chunks(id) ON DELETE RESTRICT`
 - Foránea: `FOREIGN KEY (reference_id) REFERENCES bibliographic_references(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (claim_id) REFERENCES claims(id) ON DELETE CASCADE`
-- Foránea: `FOREIGN KEY (chunk_id) REFERENCES document_chunks(id) ON DELETE RESTRICT`
 - Primaria: `PRIMARY KEY (id)`
 
 **Políticas RLS**
@@ -520,9 +535,9 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (published_by) REFERENCES auth.users(id)`
-- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE`
+- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (published_by) REFERENCES auth.users(id)`
 - Primaria: `PRIMARY KEY (id)`
 
 **Políticas RLS**
@@ -653,8 +668,8 @@ RLS: **activado**
 **Claves y relaciones**
 
 - Foránea: `FOREIGN KEY (investigation_id) REFERENCES investigations(id) ON DELETE CASCADE`
-- Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (approved_by) REFERENCES auth.users(id)`
+- Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 
 **Políticas RLS**
@@ -784,8 +799,8 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (experience_id) REFERENCES experiences(id) ON DELETE CASCADE`
+- Foránea: `FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 - Única: `UNIQUE (user_id, experience_id)`
 
@@ -911,7 +926,7 @@ RLS: **activado**
 - `profiles_insert` — usuario autenticado puede **crear** si `(id = auth.uid())`
 - `profiles_select` — usuario autenticado puede **leer** si `((id = auth.uid()) OR is_staff())`
 - `profiles_update` — usuario autenticado puede **modificar** si `(id = auth.uid())`
-- Columnas que un usuario puede modificar: display_name, academic_level, preferred_language
+- Columnas que un usuario puede modificar: preferred_language, display_name, academic_level
 
 **Ejemplos**
 

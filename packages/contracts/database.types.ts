@@ -79,6 +79,15 @@ export type Database = {
           identifier_check: string;
           checked_at: string | null;
           created_at: string;
+          tier: string;
+          doi: string | null;
+          url: string | null;
+          openalex_id: string | null;
+          venue_type: string | null;
+          cited_by_count: number | null;
+          is_retracted: boolean;
+          retraction_checked_at: string | null;
+          source_connector: string | null;
         };
         Insert: {
           id?: string;
@@ -95,6 +104,15 @@ export type Database = {
           identifier_check?: string;
           checked_at?: string | null;
           created_at?: string;
+          tier?: string;
+          doi?: string | null;
+          url?: string | null;
+          openalex_id?: string | null;
+          venue_type?: string | null;
+          cited_by_count?: number | null;
+          is_retracted?: boolean;
+          retraction_checked_at?: string | null;
+          source_connector?: string | null;
         };
         Update: {
           id?: string;
@@ -111,6 +129,15 @@ export type Database = {
           identifier_check?: string;
           checked_at?: string | null;
           created_at?: string;
+          tier?: string;
+          doi?: string | null;
+          url?: string | null;
+          openalex_id?: string | null;
+          venue_type?: string | null;
+          cited_by_count?: number | null;
+          is_retracted?: boolean;
+          retraction_checked_at?: string | null;
+          source_connector?: string | null;
         };
         Relationships: [
         ];
@@ -174,6 +201,9 @@ export type Database = {
           created_by: string | null;
           created_at: string;
           updated_at: string;
+          origin: string;
+          generated_by: Json;
+          run_id: string | null;
         };
         Insert: {
           id?: string;
@@ -199,6 +229,9 @@ export type Database = {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          origin?: string;
+          generated_by?: Json;
+          run_id?: string | null;
         };
         Update: {
           id?: string;
@@ -224,12 +257,16 @@ export type Database = {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          origin?: string;
+          generated_by?: Json;
+          run_id?: string | null;
         };
         Relationships: [
-          { foreignKeyName: "claims_topic_id_fkey"; columns: ["topic_id"]; isOneToOne: false; referencedRelation: "topics"; referencedColumns: ["id"] },
+          { foreignKeyName: "claims_subject_entity_id_fkey"; columns: ["subject_entity_id"]; isOneToOne: false; referencedRelation: "entities"; referencedColumns: ["id"] },
+          { foreignKeyName: "claims_run_id_fkey"; columns: ["run_id"]; isOneToOne: false; referencedRelation: "harness_runs"; referencedColumns: ["id"] },
           { foreignKeyName: "claims_place_entity_id_fkey"; columns: ["place_entity_id"]; isOneToOne: false; referencedRelation: "entities"; referencedColumns: ["id"] },
           { foreignKeyName: "claims_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
-          { foreignKeyName: "claims_subject_entity_id_fkey"; columns: ["subject_entity_id"]; isOneToOne: false; referencedRelation: "entities"; referencedColumns: ["id"] },
+          { foreignKeyName: "claims_topic_id_fkey"; columns: ["topic_id"]; isOneToOne: false; referencedRelation: "topics"; referencedColumns: ["id"] },
         ];
       };
       cost_ledger: {
@@ -279,8 +316,8 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "cost_ledger_run_id_fkey"; columns: ["run_id"]; isOneToOne: false; referencedRelation: "harness_runs"; referencedColumns: ["id"] },
           { foreignKeyName: "cost_ledger_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "cost_ledger_run_id_fkey"; columns: ["run_id"]; isOneToOne: false; referencedRelation: "harness_runs"; referencedColumns: ["id"] },
         ];
       };
       document_chunks: {
@@ -351,6 +388,8 @@ export type Database = {
           cites: string[];
           created_at: string;
           updated_at: string;
+          source_tier: string;
+          doi: string | null;
         };
         Insert: {
           id?: string;
@@ -375,6 +414,8 @@ export type Database = {
           cites?: string[];
           created_at?: string;
           updated_at?: string;
+          source_tier?: string;
+          doi?: string | null;
         };
         Update: {
           id?: string;
@@ -399,6 +440,8 @@ export type Database = {
           cites?: string[];
           created_at?: string;
           updated_at?: string;
+          source_tier?: string;
+          doi?: string | null;
         };
         Relationships: [
           { foreignKeyName: "documents_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
@@ -512,9 +555,9 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
+          { foreignKeyName: "evidence_links_chunk_id_fkey"; columns: ["chunk_id"]; isOneToOne: false; referencedRelation: "document_chunks"; referencedColumns: ["id"] },
           { foreignKeyName: "evidence_links_reference_id_fkey"; columns: ["reference_id"]; isOneToOne: false; referencedRelation: "bibliographic_references"; referencedColumns: ["id"] },
           { foreignKeyName: "evidence_links_claim_id_fkey"; columns: ["claim_id"]; isOneToOne: false; referencedRelation: "claims"; referencedColumns: ["id"] },
-          { foreignKeyName: "evidence_links_chunk_id_fkey"; columns: ["chunk_id"]; isOneToOne: false; referencedRelation: "document_chunks"; referencedColumns: ["id"] },
         ];
       };
       experiences: {
@@ -561,9 +604,9 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "experiences_published_by_fkey"; columns: ["published_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
-          { foreignKeyName: "experiences_run_id_fkey"; columns: ["run_id"]; isOneToOne: false; referencedRelation: "harness_runs"; referencedColumns: ["id"] },
           { foreignKeyName: "experiences_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "experiences_run_id_fkey"; columns: ["run_id"]; isOneToOne: false; referencedRelation: "harness_runs"; referencedColumns: ["id"] },
+          { foreignKeyName: "experiences_published_by_fkey"; columns: ["published_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
         ];
       };
       harness_checkpoints: {
@@ -708,8 +751,8 @@ export type Database = {
         };
         Relationships: [
           { foreignKeyName: "harness_runs_investigation_id_fkey"; columns: ["investigation_id"]; isOneToOne: false; referencedRelation: "investigations"; referencedColumns: ["id"] },
-          { foreignKeyName: "harness_runs_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
           { foreignKeyName: "harness_runs_approved_by_fkey"; columns: ["approved_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "harness_runs_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
         ];
       };
       harness_tasks: {
@@ -854,8 +897,8 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "learning_progress_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
           { foreignKeyName: "learning_progress_experience_id_fkey"; columns: ["experience_id"]; isOneToOne: false; referencedRelation: "experiences"; referencedColumns: ["id"] },
+          { foreignKeyName: "learning_progress_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
         ];
       };
       licenses: {

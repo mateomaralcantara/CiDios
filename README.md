@@ -50,6 +50,7 @@ Abre http://localhost:3000 → **Entrar** → «Usuario» → **Investigar** (la
 - [Seguridad](docs/SECURITY.md)
 - [Runbook (local, Vercel, worker)](docs/RUNBOOK.md)
 - [Conectar a Supabase paso a paso](docs/SUPABASE.md)
+- [Gemini, búsqueda en 3 dimensiones y HARNESS de bibliografía](docs/GEMINI.md)
 - [API de las tablas de Supabase (generada)](docs/API-TABLAS.md)
 - [Informe de la fase 1](docs/PHASE-1-REPORT.md)
 - [Hoja de ruta](docs/ROADMAP.md)

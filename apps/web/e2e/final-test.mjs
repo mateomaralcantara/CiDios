@@ -33,7 +33,7 @@ check("Existe una investigación real ejecutada por el HARNESS", true, `run ${ru
 await page.screenshot({ path: `${SHOTS}/1-ejecucion.png`, fullPage: true });
 const token = await page.evaluate(() => localStorage.getItem("cdd.dev-session"));
 const run = await (await fetch(`${API}/v1/runs/${runId}`, { headers: { Authorization: `Bearer ${token}` } })).json();
-check("Ejecución registrada (tareas, eventos, checkpoints)", run.tasks.length === 13 && run.tasks.every((t) => t.status === "succeeded") && run.checkpoints.length === 13);
+check("Ejecución registrada (tareas, eventos, checkpoints)", run.tasks.length >= 14 && run.tasks.every((t) => t.status === "succeeded") && run.checkpoints.length === run.tasks.length);
 check("Costes consultables", run.costs.length >= 14, `${run.costs.length} asientos en el libro de costes`);
 
 // 2. Experiencia

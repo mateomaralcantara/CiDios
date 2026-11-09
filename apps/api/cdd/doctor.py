@@ -77,6 +77,13 @@ def run() -> int:
                     f"JWKS no accesible o vacío ({res.status_code}) en {s.supabase_jwks_url}")
         except Exception as e:  # noqa: BLE001
             r.fail(f"No se pudo leer el JWKS: {type(e).__name__}: {e}")
+    if s.gemini_api_key:
+        r.ok(f"Gemini configurado: modelo {s.gemini_model}, clave {mask_secret(s.gemini_api_key)} (prueba en vivo: python -m cdd.check_external)")
+    else:
+        r.warn("Sin CDD_GEMINI_API_KEY: los especialistas con LLM no se usarán (modo determinista)")
+    r.ok(f"Repositorios habilitados: {', '.join(s.connectors_enabled) or 'ninguno'}")
+    if "openalex" in s.connectors_enabled and not s.openalex_api_key:
+        r.warn("Sin CDD_OPENALEX_API_KEY: la dimensión 2 (expertos) puede fallar por el cupo compartido de OpenAlex")
     r.check(bool(s.cors_origins), f"CORS permitido para: {', '.join(s.cors_origins)}", "CDD_CORS_ORIGINS vacío", warn_only=True)
 
     print("\nBase de datos")

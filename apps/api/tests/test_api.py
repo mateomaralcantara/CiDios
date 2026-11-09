@@ -82,7 +82,7 @@ def test_library_search_and_upload(client):
 def test_run_detail_events_and_stream(client, run):
     h = tok(client, "user")
     d = client.get(f"/v1/runs/{run['run_id']}", headers=h).json()
-    assert d["run"]["state"] == "READY" and len(d["tasks"]) == 13 and d["checkpoints"]
+    assert d["run"]["state"] == "READY" and len(d["tasks"]) == 14 and d["checkpoints"]
     assert d["costs"]
     ev = client.get(f"/v1/runs/{run['run_id']}/events", headers=h).json()
     assert any(e["event_type"] == "state_change" for e in ev)
@@ -139,7 +139,7 @@ def test_admin_requires_owner(client):
 def test_admin_controls(client, run):
     o = tok(client, "owner")
     agents = client.get("/v1/admin/agents", headers=o).json()
-    assert len(agents) == 40 and sum(a["status"] == "operational" for a in agents) == 9
+    assert len(agents) == 40 and sum(a["status"] == "operational" for a in agents) == 20
     assert client.patch("/v1/admin/agents/logic_analyst", headers=o, json={"enabled": True}).status_code == 409
     assert client.patch("/v1/admin/agents/timeline_director", headers=o, json={"max_cost_per_run_usd": 2}).status_code == 200
     prov = client.get("/v1/admin/providers", headers=o).json()
@@ -148,7 +148,7 @@ def test_admin_controls(client, run):
                                                              "period": "monthly", "limit_usd": 50}).status_code == 200
     assert client.get("/v1/admin/quality", headers=o).json()["evidence"]
     ov = client.get("/v1/admin/overview", headers=o).json()
-    assert ov["agents"]["operational"] == 9 and ov["library"]["claims"] == 29
+    assert ov["agents"]["operational"] == 20 and ov["library"]["claims"] == 29
 
 
 def test_publish_flow(client, run):
