@@ -469,11 +469,17 @@ class Worker(threading.Thread):
                 run_id = claim_next_run()
                 if run_id:
                     process_run(run_id)
-            except Exception:  # noqa: BLE001
-                traceback.print_exc()
+            except Exception as e:  # noqa: BLE001
+                failures = getattr(self, "_failures", 0) + 1
+                self._failures = failures
+                if failures == 1 or failures % 20 == 0:
+                    print(f"[worker] error ({failures}): {type(e).__name__}: {str(e)[:300]}", flush=True)
+                self._stop.wait(min(30.0, self.poll_s * 2 ** min(failures, 6)))   # espera creciente
+                continue
             finally:
                 if run_id:
                     with service_tx() as conn:
                         conn.execute("update public.harness_runs set worker_lease_until=null where id=%s", (run_id,))
+            self._failures = 0
             if not run_id:
                 self._stop.wait(self.poll_s)

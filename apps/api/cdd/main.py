@@ -8,13 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.v1 import admin, router
 from .config import get_settings
-from .db import close_pool, get_pool
+from .db import check_connection, close_pool, get_pool
 from .harness.engine import Worker
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     s = get_settings()
+    check_connection()   # si falla, la API no arranca y explica por qué
     get_pool()
     worker = None
     if s.run_worker_in_api:

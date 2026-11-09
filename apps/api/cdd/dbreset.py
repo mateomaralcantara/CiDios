@@ -23,6 +23,8 @@ def reset(database_url: str) -> None:
         raise SystemExit(f"Nombre de base no válido: {name!r}")
     if "supabase.co" in database_url or "pooler.supabase" in database_url:
         raise SystemExit("cdd.dbreset es solo para bases locales; no lo ejecutes contra Supabase.")
+    from .db import check_connection
+    check_connection(f"{base}/postgres")
     with psycopg.connect(f"{base}/postgres", autocommit=True) as admin:
         admin.execute(sql.SQL("drop database if exists {} with (force)").format(sql.Identifier(name)))
         admin.execute(sql.SQL("create database {}").format(sql.Identifier(name)))
@@ -40,4 +42,8 @@ if __name__ == "__main__":
     if not url:
         from .config import get_settings
         url = get_settings().database_url
-    reset(url)
+    from .db import DatabaseUnavailable
+    try:
+        reset(url)
+    except DatabaseUnavailable as e:
+        raise SystemExit(f"ERROR: {e}") from None

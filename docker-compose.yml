@@ -3,12 +3,11 @@
 services:
   db:
     image: pgvector/pgvector:pg16
-    container_name: cdd-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "54329:5432"   # puerto poco común para no chocar con un PostgreSQL ya instalado
     volumes:
       - cdd-pgdata:/var/lib/postgresql/data
     healthcheck:

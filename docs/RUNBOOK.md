@@ -6,7 +6,7 @@ Python 3.11+ (probado con 3.13), Node 22, PostgreSQL 16 con `pgvector`, `pg_trgm
 ## Desarrollo local (sin Supabase)
 
 Necesitas Git, Docker Desktop, Python 3.11+ y Node 22. No hace falta instalar PostgreSQL:
-`docker-compose.yml` levanta PostgreSQL 16 con pgvector en el puerto 5432 (usuario y contraseña `postgres`).
+`docker-compose.yml` levanta PostgreSQL 16 con pgvector en el puerto 54329 (usuario y contraseña `postgres`).
 
 ### Windows (PowerShell)
 ```powershell
@@ -46,8 +46,8 @@ Abre http://localhost:3000 → **Entrar** → «Usuario» (o «Propietario» par
 ```bash
 # Backend (crea y reinicia la base cdd_test por sí solo)
 cd apps/api
-CDD_TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cdd_test .venv/bin/pytest
-#   Windows: $env:CDD_TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cdd_test"; .\.venv\Scripts\pytest
+CDD_TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:54329/cdd_test .venv/bin/pytest
+#   Windows: $env:CDD_TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:54329/cdd_test"; .\.venv\Scripts\pytest
 # Frontend
 cd apps/web && npm run typecheck && npm run build
 # Prueba final en navegador real (con API y web en marcha; requiere `npm i -D playwright && npx playwright install chromium`)

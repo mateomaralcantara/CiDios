@@ -1,6 +1,6 @@
 """Las pruebas usan un Postgres real (con pgvector) y el shim local de Supabase.
 
-Variables: CDD_TEST_DATABASE_URL (por defecto postgresql://postgres@localhost:54329/cdd_test).
+Variables: CDD_TEST_DATABASE_URL (por defecto postgresql://postgres:postgres@localhost:54329/cdd_test).
 """
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-TEST_DB = os.environ.get("CDD_TEST_DATABASE_URL", "postgresql://postgres@localhost:54329/cdd_test")
+TEST_DB = os.environ.get("CDD_TEST_DATABASE_URL", "postgresql://postgres:postgres@localhost:54329/cdd_test")
 os.environ.update({"CDD_DATABASE_URL": TEST_DB, "CDD_ENV": "test", "CDD_DEV_AUTH": "true",
                    "CDD_RUN_WORKER_IN_API": "false", "CDD_CONNECTORS_ENABLED": "[]"})
 ROOT = Path(__file__).resolve().parents[3]

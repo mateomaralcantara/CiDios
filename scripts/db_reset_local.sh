@@ -2,9 +2,9 @@
 # Recrea la base local de desarrollo/pruebas: shim de Supabase + migraciones.
 #
 # Con psql instalado:
-#   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cdd scripts/db_reset_local.sh
+#   DATABASE_URL=postgresql://postgres:postgres@localhost:54329/cdd scripts/db_reset_local.sh
 # Sin psql, usando el contenedor de docker-compose.yml:
-#   PSQL="docker compose exec -T db psql" DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cdd scripts/db_reset_local.sh
+#   PSQL="docker compose exec -T db psql" DATABASE_URL=postgresql://postgres:postgres@localhost:54329/cdd scripts/db_reset_local.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 : "${DATABASE_URL:?DATABASE_URL requerido}"
