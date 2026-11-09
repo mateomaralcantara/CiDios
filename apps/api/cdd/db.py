@@ -56,8 +56,8 @@ def check_connection(url: str | None = None) -> None:
         if "password authentication failed" in str(e) and "supabase" in url:
             hint = ("\n  → La contraseña no coincide con la de la base de Supabase. Comprueba que es la «Database password» "
                     "(no la de tu cuenta de Supabase) y que los caracteres especiales van codificados (@ → %40, # → %23, / → %2F). "
-                    "Lo más sencillo: Project Settings → Database → Reset database password con una clave solo de letras y "
-                    "números, ponla en CDD_DATABASE_URL y guarda el archivo .env.")
+                    "Lo más sencillo: ejecuta «python -m cdd.set_database_url» (prueba la contraseña antes de guardarla). "
+                    "Si no la recuerdas: Project Settings → Database → Reset database password.")
         elif "password authentication failed" in str(e):
             hint = ("\n  → Responde un PostgreSQL con otra contraseña. ¿Tienes otro PostgreSQL instalado en ese puerto? "
                     "El docker-compose.yml del proyecto usa el puerto 54329 con usuario/contraseña postgres/postgres.")

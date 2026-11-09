@@ -42,6 +42,8 @@ CDD_DEV_AUTH=false
 CDD_CORS_ORIGINS=["http://localhost:3000"]
 ```
 
+- **Forma más segura de poner la contraseña:** desde `apps\api`, ejecuta `.\.venv\Scripts\python -m cdd.set_database_url`.
+  Te pide la contraseña sin mostrarla, la codifica, **prueba la conexión** y solo si funciona la guarda en `.env`.
 - Usa el **Session pooler** (puerto 5432). La conexión *Direct* puede ser solo IPv6, y muchas redes no la admiten.
   Si usas el *Transaction pooler* (puerto 6543), la API desactiva automáticamente las sentencias preparadas.
 - Si la contraseña tiene caracteres especiales (`@ # / ? :`), escríbelos codificados: `@` → `%40`, `#` → `%23`.
