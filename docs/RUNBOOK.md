@@ -4,30 +4,54 @@
 Python 3.11+ (probado con 3.13), Node 22, PostgreSQL 16 con `pgvector`, `pg_trgm`, `unaccent` y `uv` (o pip).
 
 ## Desarrollo local (sin Supabase)
-```bash
-# 1) Base de datos local (shim de Supabase + migraciones)
-export DATABASE_URL=postgresql://postgres@localhost:5432/cdd
-scripts/db_reset_local.sh
 
-# 2) API + worker
-cd apps/api
-uv venv && uv pip install -e ".[dev]"
-cp ../../.env.example .env        # ajusta CDD_DATABASE_URL
-.venv/bin/python -m cdd.seed --dev-users
-.venv/bin/uvicorn cdd.main:app --port 8000
+Necesitas Git, Docker Desktop, Python 3.11+ y Node 22. No hace falta instalar PostgreSQL:
+`docker-compose.yml` levanta PostgreSQL 16 con pgvector en el puerto 5432 (usuario y contraseña `postgres`).
 
-# 3) Web
-cd ../web && npm ci
-cp .env.example .env.local
-npm run dev                        # http://localhost:3000 → Entrar → «Propietario» / «Usuario»
+### Windows (PowerShell)
+```powershell
+git clone https://github.com/mateomaralcantara/CiDios.git
+cd CiDios
+docker compose up -d db
+cd apps\api
+python -m venv .venv
+.\.venv\Scripts\pip install -e ".[dev]"
+copy ..\..\.env.example .env
+.\.venv\Scripts\python -m cdd.dbreset
+.\.venv\Scripts\python -m cdd.seed --dev-users
+.\.venv\Scripts\uvicorn cdd.main:app --port 8000
 ```
+En otra terminal:
+```powershell
+cd CiDios\apps\web
+npm ci
+copy .env.example .env.local
+npm run dev
+```
+
+### macOS / Linux
+```bash
+git clone https://github.com/mateomaralcantara/CiDios.git && cd CiDios
+docker compose up -d db
+cd apps/api && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]" && cp ../../.env.example .env
+.venv/bin/python -m cdd.dbreset && .venv/bin/python -m cdd.seed --dev-users
+.venv/bin/uvicorn cdd.main:app --port 8000
+```
+En otra terminal: `cd apps/web && npm ci && cp .env.example .env.local && npm run dev`
+
+Abre http://localhost:3000 → **Entrar** → «Usuario» (o «Propietario» para el centro de control).
+`python -m cdd.dbreset` borra y recrea la base `cdd` (solo local; se niega a ejecutarse contra Supabase).
 
 ## Pruebas
 ```bash
-cd apps/api && CDD_TEST_DATABASE_URL=postgresql://postgres@localhost:5432/cdd_test .venv/bin/pytest
+# Backend (crea y reinicia la base cdd_test por sí solo)
+cd apps/api
+CDD_TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cdd_test .venv/bin/pytest
+#   Windows: $env:CDD_TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/cdd_test"; .\.venv\Scripts\pytest
+# Frontend
 cd apps/web && npm run typecheck && npm run build
-# Prueba final en navegador real (pila completa en marcha):
-cd apps/web && WEB_URL=http://localhost:3000 API_URL=http://localhost:8000 node e2e/final-test.mjs
+# Prueba final en navegador real (con API y web en marcha; requiere `npm i -D playwright && npx playwright install chromium`)
+cd apps/web && node e2e/final-test.mjs
 ```
 
 ## Supabase (proyecto propio, independiente de ChatBiblia)

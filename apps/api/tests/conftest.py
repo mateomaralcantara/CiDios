@@ -5,7 +5,6 @@ Variables: CDD_TEST_DATABASE_URL (por defecto postgresql://postgres@localhost:54
 from __future__ import annotations
 
 import os
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -25,8 +24,8 @@ FINAL_PROMPT = (
 
 @pytest.fixture(scope="session", autouse=True)
 def database():
-    subprocess.run([str(ROOT / "scripts" / "db_reset_local.sh")], check=True, env={**os.environ, "DATABASE_URL": TEST_DB},
-                   capture_output=True)
+    from cdd.dbreset import reset
+    reset(TEST_DB)
     from cdd import seed
     from cdd.db import close_pool
     seed.run(dev_users=True)

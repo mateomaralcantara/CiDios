@@ -29,11 +29,15 @@ backend, agentes, configuración y despliegue.
 
 ## Inicio rápido
 
+Requisitos: Docker Desktop, Python 3.11+ y Node 22. Pasos detallados para Windows y macOS/Linux en
+[`docs/RUNBOOK.md`](docs/RUNBOOK.md#desarrollo-local-sin-supabase).
+
 ```bash
-export DATABASE_URL=postgresql://postgres@localhost:5432/cdd && scripts/db_reset_local.sh
-cd apps/api && uv venv && uv pip install -e ".[dev]" && cp ../../.env.example .env
-.venv/bin/python -m cdd.seed --dev-users && .venv/bin/uvicorn cdd.main:app --port 8000
-cd apps/web && npm ci && cp .env.example .env.local && npm run dev
+docker compose up -d db                                   # PostgreSQL 16 + pgvector
+cd apps/api && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]" && cp ../../.env.example .env
+.venv/bin/python -m cdd.dbreset && .venv/bin/python -m cdd.seed --dev-users
+.venv/bin/uvicorn cdd.main:app --port 8000                # API + worker
+cd apps/web && npm ci && cp .env.example .env.local && npm run dev   # otra terminal
 ```
 
 Abre http://localhost:3000 → **Entrar** → «Usuario» → **Investigar** (la consulta de la prueba final viene precargada).

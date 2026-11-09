@@ -90,8 +90,8 @@ def _find_chunk(conn: Connection, doc_id: str, fragment: str) -> dict[str, Any]:
 
 def seed_corpus(conn: Connection, name: str = "biblical_transmission") -> dict[str, int]:
     base = CORPUS_DIR / name
-    refs = json.loads((base / "references.json").read_text())
-    know = json.loads((base / "knowledge.json").read_text())
+    refs = json.loads((base / "references.json").read_text(encoding="utf-8"))
+    know = json.loads((base / "knowledge.json").read_text(encoding="utf-8"))
     for lic in refs["licenses"]:
         conn.execute(
             """insert into public.licenses (code, name, url, allows_display, allows_excerpt, allows_full_text,
@@ -116,7 +116,7 @@ def seed_corpus(conn: Connection, name: str = "biblical_transmission") -> dict[s
         if existing:
             doc_ids[d["slug"]] = str(existing["id"])
             continue
-        body = (base / d["file"]).read_text()
+        body = (base / d["file"]).read_text(encoding="utf-8")
         try:
             res = ingest_document(conn, DocumentInput(
                 slug=d["slug"], title=d["title"], body=body, doc_kind="editorial_note", license_code="CC-BY-4.0",

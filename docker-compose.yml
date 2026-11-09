@@ -1,0 +1,21 @@
+# Base de datos local para desarrollo: PostgreSQL 16 + pgvector (equivalente al Postgres de Supabase).
+# Uso: docker compose up -d db
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: cdd-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - cdd-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  cdd-pgdata:
