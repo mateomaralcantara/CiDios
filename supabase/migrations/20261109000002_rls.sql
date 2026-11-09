@@ -1,5 +1,5 @@
 -- =====================================================================
--- CIENCIA DE DIOS — Seguridad a nivel de fila (RLS)
+-- CIENCIA Y DIOS — Seguridad a nivel de fila (RLS)
 -- Toda tabla expuesta tiene RLS habilitado y políticas explícitas.
 -- Roles: visitante (anon), usuario (authenticated + role user), editor, propietario (owner).
 -- =====================================================================

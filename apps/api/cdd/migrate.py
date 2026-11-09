@@ -7,6 +7,7 @@ Uso:
   python -m cdd.migrate               # aplica las pendientes (usa CDD_DATABASE_URL)
   python -m cdd.migrate --status      # solo muestra qué está aplicado y qué falta
   python -m cdd.migrate --url "postgresql://..."
+  python -m cdd.migrate --bundle      # genera supabase/setup_supabase.sql para el SQL Editor de Supabase
 """
 from __future__ import annotations
 
@@ -55,6 +56,39 @@ def preflight(conn: psycopg.Connection) -> list[str]:
     return problems
 
 
+BUNDLE = ROOT / "supabase" / "setup_supabase.sql"
+
+
+def bundle_sql() -> str:
+    """Un único script para pegar en el SQL Editor de Supabase: todas las migraciones en una transacción,
+    registradas en supabase_migrations.schema_migrations para que «cdd.migrate» y «supabase db push» las den por aplicadas."""
+    files = migration_files()
+    parts = [
+        "-- =====================================================================",
+        "-- CIENCIA Y DIOS — creación completa de las tablas en Supabase",
+        "-- Generado con «python -m cdd.migrate --bundle». No editar a mano.",
+        "-- Pegar entero en Supabase → SQL Editor → New query → Run.",
+        "-- Todo se ejecuta en una sola transacción: si algo falla, no se crea nada.",
+        "-- =====================================================================",
+        "begin;",
+        "",
+        "do $$ begin",
+        "  if to_regclass('public.claims') is not null then",
+        "    raise exception 'Las tablas de CIENCIA Y DIOS ya existen en esta base. Usa «python -m cdd.migrate» para aplicar solo lo pendiente.';",
+        "  end if;",
+        "end $$;",
+    ]
+    for v, n, f in files:
+        parts += ["", f"-- ######## {v}_{n} ########", f.read_text(encoding="utf-8").rstrip()]
+    parts += ["", "-- ######## registro de migraciones (compatible con Supabase CLI) ########",
+              "create schema if not exists supabase_migrations;",
+              "create table if not exists supabase_migrations.schema_migrations (version text not null primary key, statements text[], name text);",
+              "insert into supabase_migrations.schema_migrations (version, name) values"]
+    parts.append(",\n".join(f"  ('{v}', '{n}')" for v, n, _ in files) + "\non conflict (version) do nothing;")
+    parts += ["", "commit;", "", "-- Listo. Comprueba en Table Editor que aparecen las 22 tablas.", ""]
+    return "\n".join(parts)
+
+
 def run(url: str, status_only: bool = False) -> int:
     from .db import DatabaseUnavailable, check_connection
     try:
@@ -95,7 +129,12 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", help="Cadena de conexión (por defecto CDD_DATABASE_URL o .env)")
     ap.add_argument("--status", action="store_true", help="Solo mostrar el estado")
+    ap.add_argument("--bundle", action="store_true", help=f"Generar {BUNDLE.relative_to(ROOT)} para el SQL Editor de Supabase")
     a = ap.parse_args()
+    if a.bundle:
+        BUNDLE.write_text(bundle_sql(), encoding="utf-8")
+        print(f"→ {BUNDLE.relative_to(ROOT)} ({BUNDLE.stat().st_size // 1024} KB, {len(migration_files())} migraciones)")
+        sys.exit(0)
     url = a.url or os.environ.get("CDD_DATABASE_URL")
     if not url:
         from .config import get_settings

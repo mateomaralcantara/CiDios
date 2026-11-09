@@ -48,16 +48,29 @@ CDD_CORS_ORIGINS=["http://localhost:3000"]
 
 ## 3. Crear las tablas en Supabase
 
-Comprueba el estado y aplica las migraciones:
+Hay dos formas equivalentes; elige **una**.
+
+### Opción A — Desde el panel de Supabase (sin terminal)
+1. Abre `supabase/setup_supabase.sql` del repositorio y copia **todo** su contenido.
+2. En Supabase: **SQL Editor** → **New query** → pega → **Run**.
+3. Debe terminar sin errores (puede mostrar avisos «NOTICE», son normales). En **Table Editor** verás las 22 tablas.
+
+El script corre en una sola transacción: si algo falla, no se crea nada. También deja registradas las migraciones,
+así que `python -m cdd.migrate` y `supabase db push` las darán por aplicadas. Si lo ejecutas dos veces, se detiene
+con un mensaje sin tocar nada.
+
+### Opción B — Desde tu PC con la API configurada (paso 2)
 ```bash
 .\.venv\Scripts\python -m cdd.migrate --status
 ```
 ```bash
 .\.venv\Scripts\python -m cdd.migrate
 ```
-Esto crea las 22 tablas, las políticas RLS, la búsqueda híbrida y el disparador que crea el perfil de cada usuario nuevo.
-Lo aplicado se registra en `supabase_migrations.schema_migrations`, la misma tabla que usa la Supabase CLI. Por eso
-`supabase link --project-ref <ref>` seguido de `supabase db push` es una alternativa equivalente.
+Lo aplicado se registra en `supabase_migrations.schema_migrations`, la misma tabla que usa la Supabase CLI
+(`supabase link --project-ref <ref>` + `supabase db push` es otra alternativa equivalente).
+
+Con cualquiera de las dos opciones se crean las 22 tablas, las políticas RLS, la búsqueda híbrida y el disparador que
+crea el perfil de cada usuario nuevo. Para futuras migraciones usa la opción B, que solo aplica lo pendiente.
 
 > **No** uses `python -m cdd.dbreset` con Supabase: ese comando borra la base y es solo para la base local
 > (se niega a ejecutarse con una URL de Supabase).

@@ -1,5 +1,5 @@
 -- =====================================================================
--- CIENCIA DE DIOS — Núcleo de datos (fase 1)
+-- CIENCIA Y DIOS — Núcleo de datos (fase 1)
 -- 22 tablas del núcleo mínimo (de las 76 diseñadas en docs/DATA-MODEL.md)
 -- Compatible con Supabase: usa auth.uid(), roles anon/authenticated/service_role.
 -- =====================================================================

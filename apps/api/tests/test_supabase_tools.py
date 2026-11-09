@@ -61,3 +61,8 @@ def test_doctor_passes_on_seeded_database(capsys):
     assert doctor.run() == 0
     out = capsys.readouterr().out
     assert "Un visitante no puede leer tablas privadas" in out and "✗" not in out
+
+
+def test_sql_editor_bundle_is_up_to_date():
+    """supabase/setup_supabase.sql debe regenerarse tras cada migración (python -m cdd.migrate --bundle)."""
+    assert migrate.BUNDLE.read_text(encoding="utf-8") == migrate.bundle_sql()
