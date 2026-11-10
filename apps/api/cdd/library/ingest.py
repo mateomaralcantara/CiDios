@@ -16,7 +16,7 @@ from typing import Any
 from psycopg import Connection
 
 from ..security.injection import scan
-from .embeddings import get_embedder
+from .embeddings import embed_documents
 
 
 class LicenseBlocked(Exception):
@@ -113,15 +113,16 @@ def ingest_document(conn: Connection, doc: DocumentInput, owner_id: str | None) 
          body, owner_id, doc.visibility, doc.review_status, doc.cites),
     ).fetchone()
     doc_id = row["id"]
-    emb = get_embedder()
+    chunks = chunk_text(body)
+    vectors, model = embed_documents([f"{loc}. {content}" for loc, content in chunks])
     flagged = 0
-    for i, (locator, content) in enumerate(chunk_text(body)):
+    for i, ((locator, content), vec) in enumerate(zip(chunks, vectors, strict=True)):
         signals = scan(content)
         flagged += bool(signals)
         conn.execute(
             """insert into public.document_chunks (document_id, ordinal, locator, content, embedding, embedding_model,
                  injection_risk, injection_signals) values (%s,%s,%s,%s,%s,%s,%s,%s)""",
-            (doc_id, i, locator, content, emb.embed(f"{locator}. {content}"), emb.name, bool(signals), signals),
+            (doc_id, i, locator, content, vec, model, bool(signals), signals),
         )
     n = conn.execute("select count(*) as n from public.document_chunks where document_id=%s", (doc_id,)).fetchone()["n"]
     return {"id": str(doc_id), "chunks": n, "flagged_chunks": flagged, "sha256": digest}

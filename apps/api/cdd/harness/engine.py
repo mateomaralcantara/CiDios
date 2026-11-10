@@ -489,6 +489,9 @@ def claim_next_run() -> str | None:
     return str(row["id"]) if row else None
 
 
+WORKER_STATE: dict[str, Any] = {"started_at": None, "last_loop": None, "processed": 0, "failures": 0, "last_error": None}
+
+
 class Worker(threading.Thread):
     def __init__(self, poll_s: float = 0.5):
         super().__init__(daemon=True, name="harness-worker")
@@ -498,15 +501,20 @@ class Worker(threading.Thread):
         self._stop.set()
 
     def run(self) -> None:
+        WORKER_STATE["started_at"] = time.time()
         while not self._stop.is_set():
+            WORKER_STATE["last_loop"] = time.time()
             run_id = None
             try:
                 run_id = claim_next_run()
                 if run_id:
                     process_run(run_id)
+                    WORKER_STATE["processed"] += 1
             except Exception as e:  # noqa: BLE001
                 failures = getattr(self, "_failures", 0) + 1
                 self._failures = failures
+                WORKER_STATE["failures"] += 1
+                WORKER_STATE["last_error"] = f"{type(e).__name__}: {str(e)[:300]}"
                 if failures == 1 or failures % 20 == 0:
                     print(f"[worker] error ({failures}): {type(e).__name__}: {str(e)[:300]}", flush=True)
                 self._stop.wait(min(30.0, self.poll_s * 2 ** min(failures, 6)))   # espera creciente

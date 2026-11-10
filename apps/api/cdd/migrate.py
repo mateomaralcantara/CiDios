@@ -19,13 +19,12 @@ from pathlib import Path
 
 import psycopg
 
-ROOT = Path(os.environ.get("CDD_REPO_ROOT", Path(__file__).resolve().parents[3]))
-MIGRATIONS = ROOT / "supabase" / "migrations"
+from .paths import migrations_dir, repo_root
 
 
 def migration_files() -> list[tuple[str, str, Path]]:
     out = []
-    for f in sorted(MIGRATIONS.glob("*.sql")):
+    for f in sorted(migrations_dir().glob("*.sql")):
         m = re.match(r"^(\d+)_(.+)\.sql$", f.name)
         if m:
             out.append((m.group(1), m.group(2), f))
@@ -56,7 +55,8 @@ def preflight(conn: psycopg.Connection) -> list[str]:
     return problems
 
 
-BUNDLE = ROOT / "supabase" / "setup_supabase.sql"
+def bundle_path() -> Path:
+    return repo_root() / "supabase" / "setup_supabase.sql"
 
 
 def bundle_sql() -> str:
@@ -129,11 +129,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", help="Cadena de conexión (por defecto CDD_DATABASE_URL o .env)")
     ap.add_argument("--status", action="store_true", help="Solo mostrar el estado")
-    ap.add_argument("--bundle", action="store_true", help=f"Generar {BUNDLE.relative_to(ROOT)} para el SQL Editor de Supabase")
+    ap.add_argument("--bundle", action="store_true", help=f"Generar {bundle_path().relative_to(repo_root())} para el SQL Editor de Supabase")
     a = ap.parse_args()
     if a.bundle:
-        BUNDLE.write_text(bundle_sql(), encoding="utf-8")
-        print(f"→ {BUNDLE.relative_to(ROOT)} ({BUNDLE.stat().st_size // 1024} KB, {len(migration_files())} migraciones)")
+        bundle_path().write_text(bundle_sql(), encoding="utf-8")
+        print(f"→ {bundle_path().relative_to(repo_root())} ({bundle_path().stat().st_size // 1024} KB, {len(migration_files())} migraciones)")
         sys.exit(0)
     url = a.url or os.environ.get("CDD_DATABASE_URL")
     if not url:

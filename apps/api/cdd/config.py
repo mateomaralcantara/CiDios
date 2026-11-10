@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     gemini_input_usd_per_mtok: float = 0.30
     gemini_output_usd_per_mtok: float = 2.50
     gemini_thinking_budget: int | None = None   # p. ej. 0 para desactivar el «razonamiento» en modelos flash
+    # Embeddings: «local» (léxico, gratuito, sin red) o «gemini» (semántico real). Tras cambiarlo: python -m cdd.reembed
+    embeddings_provider: Literal["local", "gemini"] = "local"
+    gemini_embedding_model: str = "gemini-embedding-001"
+    gemini_embedding_usd_per_mtok: float = 0.15
     llm_max_chunks: int = 24                    # fragmentos máximos que se envían al modelo por investigación
     llm_max_claims: int = 12                    # afirmaciones máximas que se le piden
 
@@ -51,6 +55,11 @@ class Settings(BaseSettings):
     experts_max_authors: int = 5                            # dimensión 2: expertos a consultar
     experts_min_h_index: int = 15                           # umbral de experto (índice h en OpenAlex)
     experts_works_per_author: int = 3
+    fulltext_max_works: int = 3                             # artículos de acceso abierto con texto completo por investigación
+
+    # Protección contra abusos (0 = desactivado)
+    rate_limit_per_minute: int = 300          # peticiones por IP y minuto a la API (sin contar OPTIONS de CORS)
+    investigations_per_hour: int = 10         # investigaciones por usuario y hora (el propietario está exento)
 
     default_run_budget_usd: float = 1.0
     worker_poll_interval_s: float = 0.5

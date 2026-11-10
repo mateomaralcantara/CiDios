@@ -33,10 +33,10 @@ def private_doc():
 
 def test_anon_reads_public_catalog():
     with user_tx(ANON) as c:
-        assert count(c, "select count(*) n from public.claims") == 29
+        assert count(c, "select count(*) n from public.claims where origin = 'curated'") == 29
         assert count(c, "select count(*) n from public.documents where slug like 'nota-%%'") == 5
         assert count(c, "select count(*) n from public.documents where visibility='private'") == 0
-        assert count(c, "select count(*) n from public.evidence_links") == 57
+        assert count(c, "select count(*) n from public.evidence_links e join public.claims c on c.id = e.claim_id where c.origin = 'curated'") == 57
 
 
 @pytest.mark.parametrize("table", ["investigations", "harness_runs", "harness_events", "cost_ledger",

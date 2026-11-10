@@ -834,6 +834,85 @@ create index if not exists claims_run_idx on public.claims (run_id);
 comment on column public.documents.source_tier is 'Procedencia: expert_peer_reviewed (dimensión 2), peer_reviewed / published / preprint (dimensión 1), editorial, user.';
 comment on column public.claims.origin is 'curated = redactada y citada por el equipo; llm_extracted = propuesta por un modelo a partir de fragmentos verificados literalmente, pendiente de revisión.';
 
+-- ######## 20261111000008_editorial_review ########
+-- =====================================================================
+-- Revisión editorial de afirmaciones (sobre todo las propuestas por un LLM)
+-- Solo editor/propietario revisan. Cada decisión queda registrada con el estado anterior.
+-- =====================================================================
+create table if not exists public.claim_reviews (
+  id uuid primary key default gen_random_uuid(),
+  claim_id uuid not null references public.claims(id) on delete cascade,
+  reviewer_id uuid references auth.users(id) on delete set null,
+  action text not null check (action in ('approve','reject','edit')),
+  previous jsonb not null default '{}',
+  changes jsonb not null default '{}',
+  note text not null default '',
+  created_at timestamptz not null default now()
+);
+create index if not exists claim_reviews_claim_idx on public.claim_reviews (claim_id, created_at desc);
+comment on table public.claim_reviews is 'Historial de revisión editorial: quién aprobó, corrigió o rechazó cada afirmación, con el estado anterior.';
+
+alter table public.claim_reviews enable row level security;
+revoke all on public.claim_reviews from anon, authenticated;
+grant select, insert on public.claim_reviews to authenticated;
+create policy reviews_staff_read on public.claim_reviews for select to authenticated using (public.is_staff());
+create policy reviews_staff_insert on public.claim_reviews for insert to authenticated
+  with check (public.is_staff() and reviewer_id = auth.uid());
+
+-- ######## 20261111000009_search_by_embedding_model ########
+-- La búsqueda semántica solo compara vectores calculados con el MISMO modelo de embeddings
+-- (local «hashing-lexical-v1» o Gemini). Permite migrar de modelo sin mezclar espacios vectoriales.
+drop function if exists public.hybrid_search(text, vector, int, text);
+
+create or replace function public.hybrid_search(
+  query_text text,
+  query_embedding vector(384),
+  match_count int default 10,
+  mode text default 'hybrid',          -- 'text' | 'semantic' | 'hybrid'
+  embedding_model text default null    -- null = cualquier modelo (compatibilidad)
+) returns table (
+  chunk_id uuid, document_id uuid, document_title text, locator text, content text,
+  text_rank real, semantic_score real, score real, injection_risk boolean
+)
+language sql stable security invoker set search_path = public, extensions, pg_temp as $$
+  with q as (
+    select coalesce(nullif(replace(websearch_to_tsquery('public.es_unaccent', query_text)::text, ' & ', ' | '), ''), '''''')::tsquery as tsq
+  ),
+  t as (
+    select c.id, ts_rank_cd(c.content_tsv, q.tsq) as r,
+           row_number() over (order by ts_rank_cd(c.content_tsv, q.tsq) desc) as rn
+    from public.document_chunks c, q
+    where mode in ('text','hybrid') and c.content_tsv @@ q.tsq
+    order by r desc limit greatest(match_count * 4, 20)
+  ),
+  s as (
+    select c.id, 1 - (c.embedding <=> query_embedding) as sim,
+           row_number() over (order by c.embedding <=> query_embedding) as rn
+    from public.document_chunks c
+    where mode in ('semantic','hybrid') and query_embedding is not null and c.embedding is not null
+      and (hybrid_search.embedding_model is null or c.embedding_model = hybrid_search.embedding_model)
+      and 1 - (c.embedding <=> query_embedding) >= 0.1
+    order by c.embedding <=> query_embedding limit greatest(match_count * 4, 20)
+  ),
+  fused as (
+    select coalesce(t.id, s.id) as id,
+           coalesce(t.r, 0)::real as text_rank,
+           coalesce(s.sim, 0)::real as semantic_score,
+           (coalesce(1.0 / (60 + t.rn), 0) + coalesce(1.0 / (60 + s.rn), 0))::real as score
+    from t full outer join s on t.id = s.id
+  )
+  select c.id, d.id, d.title, c.locator, c.content, f.text_rank, f.semantic_score, f.score, c.injection_risk
+  from fused f
+  join public.document_chunks c on c.id = f.id
+  join public.documents d on d.id = c.document_id
+  order by f.score desc
+  limit match_count
+$$;
+
+grant execute on function public.hybrid_search(text, vector, int, text, text) to anon, authenticated;
+comment on function public.hybrid_search(text, vector, int, text, text) is 'Búsqueda textual, semántica o híbrida sobre la biblioteca (respeta RLS). Llamable por RPC.';
+create index if not exists document_chunks_embedding_model_idx on public.document_chunks (embedding_model);
+
 -- ######## registro de migraciones (compatible con Supabase CLI) ########
 create schema if not exists supabase_migrations;
 create table if not exists supabase_migrations.schema_migrations (version text not null primary key, statements text[], name text);
@@ -844,7 +923,9 @@ insert into supabase_migrations.schema_migrations (version, name) values
   ('20261109000004', 'auth_hooks'),
   ('20261110000005', 'supabase_compat'),
   ('20261110000006', 'no_evidence_status'),
-  ('20261110000007', 'sources_llm_bibliography')
+  ('20261110000007', 'sources_llm_bibliography'),
+  ('20261111000008', 'editorial_review'),
+  ('20261111000009', 'search_by_embedding_model')
 on conflict (version) do nothing;
 
 commit;

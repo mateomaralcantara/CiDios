@@ -54,19 +54,24 @@ def ingest_candidate(conn: Connection, c: Candidate, *, run_id: str, dimension: 
                                 (c.doi,)).fetchone()
     if existing is None:
         authors = ", ".join(a.name for a in c.authors[:6]) + (" et al." if len(c.authors) > 6 else "")
+        full = (c.extra or {}).get("full_text")
         body = (f"# {c.title}\n\n## Datos de la obra\n\n{authors or 'Autoría no indicada'} ({c.year or 's. f.'}). "
-                f"{c.venue or ''}{'. DOI: ' + c.doi if c.doi else ''}\n\n## Resumen\n\n{c.abstract}")
-        prov = {"connector": c.source, "url": c.url, "doi": c.doi, "openalex_id": c.openalex_id, "dimension": dimension,
+                f"{c.venue or ''}{'. DOI: ' + c.doi if c.doi else ''}\n\n## Resumen\n\n{c.abstract}"
+                + (f"\n\n{full}" if full else ""))
+        license_code = (c.extra or {}).get("full_text_license") if full else "CITATION-ONLY"
+        rights = (f"Texto completo de acceso abierto ({c.license}); se reproduce con atribución. Metadatos vía {c.source}."
+                  if full else f"Resumen publicado de la obra, almacenado como extracto para cita con atribución. Metadatos vía {c.source}.")
+        prov = {"content": "full_text" if full else "abstract", "connector": c.source, "url": c.url, "doi": c.doi, "openalex_id": c.openalex_id, "dimension": dimension,
                 "run_id": run_id, "retrieved_at": datetime.now(UTC).isoformat(), "license": c.license,
                 "work_type": c.work_type, "venue_type": c.venue_type}
         if expert:
             prov["expert"] = expert
         try:
             res = ingest_document(conn, DocumentInput(
-                title=c.title[:300], body=body, doc_kind="connector_record", license_code="CITATION-ONLY",
+                title=c.title[:300], body=body, doc_kind="connector_record", license_code=license_code or "CITATION-ONLY",
                 authors=[a.name for a in c.authors[:25]], institution=c.venue, published_date=str(c.year or ""),
                 language=c.language or "en", identifier=c.doi or c.raw_id,
-                rights_statement=f"Resumen publicado de la obra, almacenado como extracto para cita con atribución. Metadatos vía {c.source}.",
+                rights_statement=rights,
                 provenance={k: v for k, v in prov.items() if v is not None}, visibility="public", review_status="pending_review",
                 cites=[ref_id]), owner_id=None)
             doc_id, reused = res["id"], False

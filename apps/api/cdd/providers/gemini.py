@@ -104,6 +104,30 @@ class GeminiClient:
                 time.sleep(min(20, 2 ** (i + 1)))
         raise last or GeminiError("Error desconocido de Gemini")
 
+    def embed(self, texts: list[str], task_type: str = "RETRIEVAL_DOCUMENT", dim: int = 384) -> list[list[float]]:
+        """Embeddings normalizados (L2) de dimensión `dim` con el modelo de embeddings de Gemini (lotes de 100)."""
+        s = get_settings()
+        model = s.gemini_embedding_model
+        out: list[list[float]] = []
+        with http_client(timeout=s.gemini_timeout_s, headers={"x-goog-api-key": self.api_key}) as client:
+            for i in range(0, len(texts), 100):
+                batch = texts[i:i + 100]
+                body = {"requests": [{"model": f"models/{model}", "content": {"parts": [{"text": t[:8000]}]},
+                                      "taskType": task_type, "outputDimensionality": dim} for t in batch]}
+                r = client.post(f"{s.gemini_base_url}/models/{model}:batchEmbedContents", json=body)
+                if r.status_code != 200:
+                    raise _friendly(r.status_code, r.text)
+                embs = r.json().get("embeddings") or []
+                if len(embs) != len(batch):
+                    raise GeminiError("Gemini devolvió un número de embeddings distinto al pedido")
+                for e in embs:
+                    v = e.get("values") or []
+                    if len(v) != dim:
+                        raise GeminiError(f"Dimensión inesperada del embedding ({len(v)} ≠ {dim})")
+                    n = sum(x * x for x in v) ** 0.5 or 1.0
+                    out.append([x / n for x in v])
+        return out
+
     def _parse(self, payload: dict, latency: float) -> LLMResult:
         s = get_settings()
         fb = payload.get("promptFeedback") or {}

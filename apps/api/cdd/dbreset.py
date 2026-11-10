@@ -8,12 +8,11 @@ from __future__ import annotations
 
 import os
 import sys
-from pathlib import Path
 
 import psycopg
 from psycopg import sql
 
-ROOT = Path(os.environ.get("CDD_REPO_ROOT", Path(__file__).resolve().parents[3]))
+from .paths import repo_root
 
 
 def reset(database_url: str) -> None:
@@ -28,8 +27,9 @@ def reset(database_url: str) -> None:
     with psycopg.connect(f"{base}/postgres", autocommit=True) as admin:
         admin.execute(sql.SQL("drop database if exists {} with (force)").format(sql.Identifier(name)))
         admin.execute(sql.SQL("create database {}").format(sql.Identifier(name)))
-    files = [ROOT / "supabase" / "tests" / "00_local_supabase_shim.sql",
-             *sorted((ROOT / "supabase" / "migrations").glob("*.sql"))]
+    root = repo_root()
+    files = [root / "supabase" / "tests" / "00_local_supabase_shim.sql",
+             *sorted((root / "supabase" / "migrations").glob("*.sql"))]
     with psycopg.connect(database_url, autocommit=True) as conn:
         for f in files:
             print(f"→ {f.name}")

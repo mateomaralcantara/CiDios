@@ -5,6 +5,7 @@ import re
 from typing import Any
 
 from ...config import get_settings
+from ...connectors.europepmc import EuropePMCConnector, fulltext_license_code
 from ...connectors.openalex import OpenAlexConnector
 from ...connectors.registry import CONNECTORS, sources_for
 from ...db import service_tx
@@ -108,6 +109,23 @@ def _published(ctx: AgentContext) -> dict[str, Any]:
         unique.append(c)
     unique.sort(key=lambda c: (-c.extra["relevance"], -(c.cited_by or 0)))
     picked = [c for c in unique if c.extra["relevance"] >= 0.15][: s.published_max_works]
+    # Texto completo de acceso abierto (Europe PMC) cuando la licencia permite reproducirlo
+    full_texts = 0
+    epmc = EuropePMCConnector()
+    for c in picked:
+        lic = fulltext_license_code(c.license)
+        if full_texts >= s.fulltext_max_works or c.source != "europepmc" or not c.extra.get("pmcid") or not lic:
+            continue
+        try:
+            text = epmc.full_text(c.extra["pmcid"])
+        except Exception as e:  # noqa: BLE001
+            ctx.log(f"Texto completo no disponible ({c.extra['pmcid']}): {type(e).__name__}", level="warning")
+            continue
+        if text:
+            c.extra.update(full_text=text, full_text_license=lic)
+            full_texts += 1
+    if full_texts:
+        ctx.log(f"{full_texts} artículos de acceso abierto incorporados con su texto completo (licencia que lo permite)")
     ctx.tool("library.ingest")
     docs = []
     with service_tx() as conn:
@@ -121,7 +139,7 @@ def _published(ctx: AgentContext) -> dict[str, Any]:
     if retracted:
         ctx.log(f"{retracted} obras retractadas descartadas", level="warning")
     ctx.log(f"Dimensión 1: {len(docs)} obras publicadas incorporadas (de {len(unique)} candidatas en {', '.join(sources) or 'ningún repositorio'})")
-    return {"dimension": "published", "queries": queries, "sources": sources, "documents": docs,
+    return {"dimension": "published", "queries": queries, "sources": sources, "documents": docs, "full_texts": full_texts,
             "chunk_ids": [cid for d in docs for cid in d["chunk_ids"]], "connector_reports": reports,
             "candidates_seen": len(unique), "retracted_excluded": retracted, "_usage": usage}
 

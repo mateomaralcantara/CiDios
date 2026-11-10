@@ -5,15 +5,15 @@ from typing import Any, Literal
 
 from psycopg import Connection
 
-from .embeddings import get_embedder
+from .embeddings import embed_query
 
 Mode = Literal["text", "semantic", "hybrid"]
 
 
 def search(conn: Connection, query: str, k: int = 10, mode: Mode = "hybrid") -> list[dict[str, Any]]:
-    vec = get_embedder().embed(query) if mode != "text" else None
+    vec, model = embed_query(query) if mode != "text" else (None, None)
     rows = conn.execute(
-        "select * from public.hybrid_search(%s, %s::vector, %s, %s)", (query, vec, k, mode)
+        "select * from public.hybrid_search(%s, %s::vector, %s, %s, %s)", (query, vec, k, mode, model)
     ).fetchall()
     return [
         {**r, "chunk_id": str(r["chunk_id"]), "document_id": str(r["document_id"]),

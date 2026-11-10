@@ -29,13 +29,19 @@ export default function RunPage() {
   const token = session?.token;
   const seen = useRef(new Set<number>());
 
-  const refresh = useCallback(() => {
+  const load = useCallback(() => {
     if (token) api<RunDetail>(`/v1/runs/${id}`, { token }).then(setD).catch((e) => setErr(e.message));
   }, [id, token]);
+  // Agrupa las recargas: como máximo una por segundo aunque lleguen muchos eventos seguidos
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refresh = useCallback(() => {
+    if (pending.current) return;
+    pending.current = setTimeout(() => { pending.current = null; load(); }, 1000);
+  }, [load]);
 
   useEffect(() => {
     if (!token) return;
-    refresh();
+    load();
     const es = new EventSource(`${API_URL}/v1/runs/${id}/stream?access_token=${encodeURIComponent(token)}`);
     es.addEventListener("harness", (m) => {
       const e = JSON.parse((m as MessageEvent).data) as Ev;

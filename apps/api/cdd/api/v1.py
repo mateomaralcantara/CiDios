@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
-from ..auth import Principal, get_principal, issue_dev_token, require_owner, require_user
+from ..auth import Principal, get_principal, issue_dev_token, require_owner, require_staff, require_user
 from ..config import get_settings
 from ..connectors.registry import CONNECTORS, PLANNED
 from ..db import service_tx, user_tx
@@ -33,9 +33,15 @@ def _jsonable(rows: Any) -> Any:
 # ------------------------------------------------------------------ sistema y sesión
 @router.get("/health")
 def health() -> dict[str, Any]:
+    import time as _t
+
+    from ..harness.engine import WORKER_STATE
     with service_tx() as conn:
         conn.execute("select 1")
-    return {"status": "ok", "env": get_settings().env, "api_version": "v1"}
+    s = get_settings()
+    last = WORKER_STATE.get("last_loop")
+    worker = "disabled" if not s.run_worker_in_api else ("running" if last and _t.time() - last < 60 else "stalled")
+    return {"status": "ok", "env": s.env, "api_version": "v1", "worker": worker}
 
 
 class DevTokenIn(BaseModel):
@@ -155,7 +161,8 @@ def library_search(q: str = Query(min_length=2, max_length=500), mode: Literal["
                    k: int = Query(10, ge=1, le=50), p: Principal = Depends(get_principal)) -> dict[str, Any]:
     with user_tx(p.claims) as conn:
         results = search(conn, q, k, mode)
-    return _jsonable({"query": q, "mode": mode, "embedding_model": "hashing-lexical-v1", "results": results})
+    from ..library.embeddings import get_embedder
+    return _jsonable({"query": q, "mode": mode, "embedding_model": get_embedder().name, "results": results})
 
 
 # ------------------------------------------------------------------ investigaciones y HARNESS
@@ -170,6 +177,13 @@ class InvestigationIn(BaseModel):
 def create_investigation(body: InvestigationIn, p: Principal = Depends(require_user)) -> dict[str, Any]:
     if body.budget_usd is not None and not p.is_owner:
         body.budget_usd = None  # solo el propietario fija presupuestos distintos de la política
+    limit = get_settings().investigations_per_hour
+    if limit > 0 and not p.is_owner:
+        with service_tx() as conn:
+            n = conn.execute("""select count(*) n from public.investigations
+                                where owner_id=%s and created_at > now() - interval '1 hour'""", (p.user_id,)).fetchone()["n"]
+        if n >= limit:
+            raise HTTPException(429, f"Has alcanzado el límite de {limit} investigaciones por hora. Inténtalo más tarde.")
     try:
         return engine.create_investigation(p, body.prompt, body.preferences, body.budget_usd, body.force_new)
     except engine.PolicyError as e:
@@ -564,3 +578,127 @@ def admin_experiences(p: Principal = Depends(require_owner)) -> list[dict[str, A
     with user_tx(p.claims) as conn:
         return _jsonable(conn.execute("""select id, run_id, modality, title, status, knowledge_packet_sha256, created_at,
                                            published_at from public.experiences order by created_at desc""").fetchall())
+
+
+# ------------------------------------------------------------------ revisión editorial (editor / propietario)
+review = APIRouter(prefix="/v1/review", dependencies=[Depends(require_staff)])
+
+
+@review.get("/claims")
+def review_queue(status: Literal["pending_review", "reviewed", "rejected"] = "pending_review",
+                 origin: Literal["llm_extracted", "curated", "all"] = "llm_extracted",
+                 p: Principal = Depends(require_staff)) -> dict[str, Any]:
+    with user_tx(p.claims) as conn:
+        where = "c.review_status = %s" + ("" if origin == "all" else " and c.origin = %s")
+        args: tuple = (status,) if origin == "all" else (status, origin)
+        ids = [str(r["id"]) for r in conn.execute(
+            f"select c.id from public.claims c where {where} order by c.created_at desc limit 200", args).fetchall()]
+        claims = get_claims(conn, ids)
+        extra = {str(r["id"]): r for r in conn.execute(
+            """select c.id, c.visibility::text, c.created_by, c.run_id, c.created_at, t.title as topic_title
+               from public.claims c left join public.topics t on t.id = c.topic_id where c.id = any(%s::uuid[])""",
+            (ids,)).fetchall()}
+        counts = {r["review_status"]: r["n"] for r in conn.execute(
+            "select review_status::text, count(*) n from public.claims where origin='llm_extracted' group by 1").fetchall()}
+    for c in claims:
+        c.update({k: v for k, v in extra.get(c["id"], {}).items() if k != "id"})
+    claims.sort(key=lambda c: str(c.get("created_at")), reverse=True)
+    return _jsonable({"claims": claims, "counts": counts})
+
+
+class ReviewIn(BaseModel):
+    action: Literal["approve", "reject", "edit"]
+    statement: str | None = Field(default=None, min_length=10, max_length=1000)
+    category: str | None = None
+    consensus_note: str | None = Field(default=None, max_length=1000)
+    note: str = Field(default="", max_length=1000)
+
+
+@review.post("/claims/{claim_id}")
+def review_claim(claim_id: str, body: ReviewIn, p: Principal = Depends(require_staff)) -> dict[str, Any]:
+    import hashlib
+
+    from ..harness.agents.extraction import CATEGORIES
+    if body.category and body.category not in CATEGORIES:
+        raise HTTPException(422, "Categoría epistémica no válida")
+    with user_tx(p.claims) as conn:
+        c = conn.execute("""select id, statement, category::text, consensus_note, review_status::text, visibility::text
+                            from public.claims where id=%s""", (claim_id,)).fetchone()
+        if not c:
+            raise HTTPException(404, "Afirmación no encontrada")
+        changes: dict[str, Any] = {}
+        if body.statement and body.statement.strip() != c["statement"]:
+            changes["statement"] = body.statement.strip()
+        if body.category and body.category != c["category"]:
+            changes["category"] = body.category
+        if body.consensus_note is not None and body.consensus_note != c["consensus_note"]:
+            changes["consensus_note"] = body.consensus_note
+        if body.action == "edit" and not changes:
+            raise HTTPException(422, "No hay cambios que guardar")
+        status = {"approve": "reviewed", "reject": "rejected", "edit": c["review_status"]}[body.action]
+        visibility = "public" if body.action == "approve" else ("private" if body.action == "reject" else c["visibility"])
+        stmt = changes.get("statement", c["statement"])
+        conn.execute(
+            """update public.claims set statement=%s, category=%s, consensus_note=%s, review_status=%s, visibility=%s,
+                 content_sha256=%s where id=%s""",
+            (stmt, changes.get("category", c["category"]), changes.get("consensus_note", c["consensus_note"]), status,
+             visibility, hashlib.sha256(stmt.encode()).hexdigest(), claim_id))
+        conn.execute("""insert into public.claim_reviews (claim_id, reviewer_id, action, previous, changes, note)
+                        values (%s,%s,%s,%s,%s,%s)""",
+                     (claim_id, p.user_id, body.action, json.dumps({k: c[k] for k in ("statement", "category", "consensus_note",
+                                                                                      "review_status", "visibility")}),
+                      json.dumps(changes), body.note))
+        hist = conn.execute("select action, reviewer_id, note, created_at from public.claim_reviews where claim_id=%s "
+                            "order by created_at desc", (claim_id,)).fetchall()
+    return _jsonable({"claim_id": claim_id, "review_status": status, "visibility": visibility, "history": hist})
+
+
+@admin.get("/system")
+def system_status(p: Principal = Depends(require_owner)) -> dict[str, Any]:
+    """Monitorización: worker, cola, ejecuciones atascadas, errores, base de datos, gasto y configuración."""
+    import os
+    import time as _t
+
+    from ..harness.engine import WORKER_STATE
+    from ..library.embeddings import get_embedder
+    from ..main import STARTED_AT
+    s = get_settings()
+    t0 = _t.perf_counter()
+    with service_tx() as conn:
+        conn.execute("select 1")
+        db_ms = round((_t.perf_counter() - t0) * 1000, 1)
+        q = lambda sql: conn.execute(sql).fetchone()  # noqa: E731
+        queue = q("""select count(*) filter (where queued) as queued,
+                            count(*) filter (where state in ('ACQUIRING','ANALYZING','CROSS_EXAMINING','VERIFYING','PACKAGING',
+                                                             'RENDERING','QA','AUTHORIZED','PLANNED')) as active,
+                            count(*) filter (where state in ('ACQUIRING','ANALYZING','CROSS_EXAMINING','VERIFYING','PACKAGING',
+                                                             'RENDERING','QA','AUTHORIZED','PLANNED')
+                                             and updated_at < now() - interval '15 minutes'
+                                             and (worker_lease_until is null or worker_lease_until < now())) as stuck,
+                            count(*) filter (where state='AWAITING_APPROVAL') as awaiting_approval,
+                            count(*) filter (where state='FAILED' and created_at > now() - interval '1 day') as failed_24h,
+                            count(*) filter (where state='PARTIAL' and created_at > now() - interval '1 day') as no_evidence_24h,
+                            count(*) filter (where state in ('READY','PUBLISHED') and created_at > now() - interval '1 day') as ok_24h
+                     from public.harness_runs""")
+        spend = q("""select coalesce(sum(amount_usd) filter (where provider='gemini'),0) as gemini_usd,
+                            coalesce(sum(input_tokens+output_tokens) filter (where provider='gemini'),0) as gemini_tokens,
+                            count(*) filter (where provider='gemini') as gemini_calls,
+                            coalesce(sum(amount_usd),0) as total_usd
+                     from public.cost_ledger where kind='actual' and created_at > now() - interval '1 day'""")
+        errors = conn.execute("""select run_id, task_key, message, created_at from public.harness_events
+                                 where level='error' order by id desc limit 10""").fetchall()
+        pending_review = q("select count(*) n from public.claims where review_status='pending_review' and origin='llm_extracted'")["n"]
+        models = conn.execute("select embedding_model, count(*) n from public.document_chunks group by 1 order by 2 desc").fetchall()
+    last = WORKER_STATE.get("last_loop")
+    return _jsonable({
+        "version": os.environ.get("RENDER_GIT_COMMIT", os.environ.get("GIT_SHA", "local"))[:12],
+        "env": s.env, "uptime_s": int(_t.time() - STARTED_AT), "db_latency_ms": db_ms,
+        "worker": {"enabled": s.run_worker_in_api, "seconds_since_last_loop": round(_t.time() - last, 1) if last else None,
+                   "healthy": bool(last and _t.time() - last < 60), "processed": WORKER_STATE["processed"],
+                   "failures": WORKER_STATE["failures"], "last_error": WORKER_STATE["last_error"]},
+        "runs": queue, "spend_24h": spend, "recent_errors": errors, "claims_pending_review": pending_review,
+        "embeddings": {"active": get_embedder().name, "chunks_by_model": models},
+        "limits": {"rate_limit_per_minute": s.rate_limit_per_minute, "investigations_per_hour": s.investigations_per_hour},
+        "llm": {"gemini_configured": bool(s.gemini_api_key), "model": s.gemini_model},
+        "connectors": s.connectors_enabled,
+    })

@@ -60,5 +60,48 @@ class HashingEmbedder:
         return [v / n for v in vec] if n else vec
 
 
+class GeminiEmbedder:
+    """Embeddings semánticos de Gemini, reducidos a 384 dimensiones (mismo esquema vector(384))."""
+    dim = DIM
+
+    def __init__(self) -> None:
+        from ..config import get_settings
+        self.name = f"gemini:{get_settings().gemini_embedding_model}:{DIM}"
+
+    def embed(self, text: str) -> list[float]:
+        return self.embed_many([text], query=True)[0]
+
+    def embed_many(self, texts: list[str], query: bool = False) -> list[list[float]]:
+        from ..providers.gemini import GeminiClient
+        return GeminiClient().embed(texts, "RETRIEVAL_QUERY" if query else "RETRIEVAL_DOCUMENT", DIM)
+
+
 def get_embedder() -> Embedder:
+    from ..config import get_settings
+    s = get_settings()
+    if s.embeddings_provider == "gemini" and s.gemini_api_key:
+        return GeminiEmbedder()
     return HashingEmbedder()
+
+
+def embed_documents(texts: list[str]) -> tuple[list[list[float]], str]:
+    """Embeddings de fragmentos con el proveedor activo; si Gemini falla, respaldo léxico local (nunca bloquea la ingesta)."""
+    emb = get_embedder()
+    if isinstance(emb, GeminiEmbedder):
+        try:
+            return emb.embed_many(texts), emb.name
+        except Exception:  # noqa: BLE001 — la red o la cuota no deben impedir incorporar documentos
+            pass
+    h = HashingEmbedder()
+    return [h.embed(t) for t in texts], h.name
+
+
+def embed_query(text: str) -> tuple[list[float], str]:
+    emb = get_embedder()
+    if isinstance(emb, GeminiEmbedder):
+        try:
+            return emb.embed(text), emb.name
+        except Exception:  # noqa: BLE001
+            pass
+    h = HashingEmbedder()
+    return h.embed(text), h.name

@@ -18,8 +18,8 @@ from .migrate import migration_files
 TABLES = ['profiles', 'user_roles', 'licenses', 'bibliographic_references', 'documents', 'document_chunks', 'topics',
           'entities', 'entity_relations', 'claims', 'evidence_links', 'perspectives', 'investigations', 'agent_definitions',
           'harness_runs', 'harness_tasks', 'harness_events', 'harness_checkpoints', 'experiences', 'learning_progress',
-          'budget_policies', 'cost_ledger']
-PRIVATE_TABLES = ['investigations', 'harness_runs', 'cost_ledger', 'learning_progress', 'budget_policies', 'user_roles']
+          'budget_policies', 'cost_ledger', 'claim_reviews']
+PRIVATE_TABLES = ['investigations', 'harness_runs', 'cost_ledger', 'learning_progress', 'budget_policies', 'user_roles', 'claim_reviews']
 
 
 class Report:

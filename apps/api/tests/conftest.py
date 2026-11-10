@@ -11,7 +11,8 @@ import pytest
 
 TEST_DB = os.environ.get("CDD_TEST_DATABASE_URL", "postgresql://postgres:postgres@localhost:54329/cdd_test")
 os.environ.update({"CDD_DATABASE_URL": TEST_DB, "CDD_ENV": "test", "CDD_DEV_AUTH": "true",
-                   "CDD_RUN_WORKER_IN_API": "false", "CDD_CONNECTORS_ENABLED": "[]"})
+                   "CDD_RUN_WORKER_IN_API": "false", "CDD_CONNECTORS_ENABLED": "[]",
+                   "CDD_RATE_LIMIT_PER_MINUTE": "0", "CDD_INVESTIGATIONS_PER_HOUR": "0"})
 ROOT = Path(__file__).resolve().parents[3]
 
 FINAL_PROMPT = (

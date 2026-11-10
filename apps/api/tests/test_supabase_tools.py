@@ -12,14 +12,14 @@ from .conftest import TEST_DB
 @pytest.fixture(scope="module")
 def supa_url():
     """Base vacía con lo que Supabase proporciona (roles + auth) pero sin migraciones."""
-    from cdd.dbreset import ROOT
+    from cdd.paths import repo_root
     base, _, _ = TEST_DB.rpartition("/")
     url = f"{base}/cdd_supa_tool_test"
     with psycopg.connect(f"{base}/postgres", autocommit=True) as c:
         c.execute("drop database if exists cdd_supa_tool_test with (force)")
         c.execute("create database cdd_supa_tool_test")
     with psycopg.connect(url, autocommit=True) as c:
-        c.execute((ROOT / "supabase/tests/00_local_supabase_shim.sql").read_text(encoding="utf-8"))
+        c.execute((repo_root() / "supabase/tests/00_local_supabase_shim.sql").read_text(encoding="utf-8"))
     return url
 
 
@@ -46,7 +46,7 @@ def test_migrate_applies_once_and_records_like_supabase_cli(supa_url, capsys):
 
 
 def test_export_schema_documents_every_table(supa_url, tmp_path, monkeypatch):
-    monkeypatch.setattr(export_schema, "ROOT", tmp_path)
+    monkeypatch.setattr(export_schema, "repo_root", lambda: tmp_path)
     (tmp_path / "docs").mkdir()
     (tmp_path / "packages" / "contracts").mkdir(parents=True)
     export_schema.main(supa_url)
@@ -65,4 +65,23 @@ def test_doctor_passes_on_seeded_database(capsys):
 
 def test_sql_editor_bundle_is_up_to_date():
     """supabase/setup_supabase.sql debe regenerarse tras cada migración (python -m cdd.migrate --bundle)."""
-    assert migrate.BUNDLE.read_text(encoding="utf-8") == migrate.bundle_sql()
+    assert migrate.bundle_path().read_text(encoding="utf-8") == migrate.bundle_sql()
+
+
+def test_imports_work_inside_render_container(tmp_path):
+    """En Docker el código vive en /app/cdd: importar la API no debe depender de la estructura del repositorio."""
+    import shutil
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    import cdd
+    app = tmp_path / "app"
+    shutil.copytree(Path(cdd.__file__).parent, app / "cdd", ignore=shutil.ignore_patterns("__pycache__"))
+    code = ("import pathlib, cdd.paths as p; "
+            "pathlib.Path.parents.__class__  # noqa\n"
+            "from cdd import main, seed, migrate, dbreset, export_schema; print('ok', p.corpus_dir())")
+    env = {"PATH": "/usr/bin:/bin", "CDD_CORPUS_DIR": "/corpus", "CDD_REPO_ROOT": "/repo"}
+    r = subprocess.run([sys.executable, "-c", code], cwd=app, env=env, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-800:]
+    assert "ok /corpus" in r.stdout

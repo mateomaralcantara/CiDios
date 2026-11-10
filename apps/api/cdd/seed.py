@@ -8,8 +8,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
-from pathlib import Path
 from typing import Any
 
 from psycopg import Connection
@@ -17,9 +15,8 @@ from psycopg import Connection
 from .db import service_tx
 from .harness.registry import AGENTS
 from .library.ingest import DocumentInput, DuplicateDocument, ingest_document
+from .paths import corpus_dir
 from .topics import AREAS
-
-CORPUS_DIR = Path(os.environ.get("CDD_CORPUS_DIR", Path(__file__).resolve().parents[3] / "corpus"))
 
 DEV_USERS = {
     "owner": ("00000000-0000-4000-8000-000000000001", "propietario@cienciaydios.local", "owner"),
@@ -94,7 +91,7 @@ def _find_chunk(conn: Connection, doc_id: str, fragment: str) -> dict[str, Any]:
 
 
 def seed_corpus(conn: Connection, name: str = "biblical_transmission") -> dict[str, int]:
-    base = CORPUS_DIR / name
+    base = corpus_dir() / name
     refs = json.loads((base / "references.json").read_text(encoding="utf-8"))
     know = json.loads((base / "knowledge.json").read_text(encoding="utf-8"))
     for lic in refs["licenses"]:

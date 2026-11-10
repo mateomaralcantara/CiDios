@@ -11,12 +11,11 @@ from __future__ import annotations
 import argparse
 import os
 import re
-from pathlib import Path
 
 import psycopg
 from psycopg.rows import dict_row
 
-ROOT = Path(os.environ.get("CDD_REPO_ROOT", Path(__file__).resolve().parents[3]))
+from .paths import repo_root
 
 CMD_ES = {"SELECT": "leer", "INSERT": "crear", "UPDATE": "modificar", "DELETE": "borrar", "ALL": "leer y escribir"}
 ROLE_ES = {"anon": "visitante", "authenticated": "usuario autenticado", "public": "todos"}
@@ -247,8 +246,8 @@ def render_types(s: dict) -> str:
 def main(url: str) -> None:
     with psycopg.connect(url, row_factory=dict_row) as conn:
         s = introspect(conn)
-    (ROOT / "docs" / "API-TABLAS.md").write_text(render_markdown(s), encoding="utf-8")
-    (ROOT / "packages" / "contracts" / "database.types.ts").write_text(render_types(s), encoding="utf-8")
+    (repo_root() / "docs" / "API-TABLAS.md").write_text(render_markdown(s), encoding="utf-8")
+    (repo_root() / "packages" / "contracts" / "database.types.ts").write_text(render_types(s), encoding="utf-8")
     print(f"→ docs/API-TABLAS.md y packages/contracts/database.types.ts ({len(s['tables'])} tablas, "
           f"{len(s['policies'])} políticas, {len(s['funcs'])} funciones)")
 

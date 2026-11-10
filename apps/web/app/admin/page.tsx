@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { api, formatDate, formatUsd } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-type Tab = "resumen" | "agentes" | "ejecuciones" | "costes" | "presupuestos" | "calidad" | "usuarios" | "proveedores" | "experiencias";
-const TABS: [Tab, string][] = [["resumen", "Resumen"], ["agentes", "Agentes"], ["ejecuciones", "Ejecuciones"], ["costes", "Costes"],
+type Tab = "sistema" | "resumen" | "agentes" | "ejecuciones" | "costes" | "presupuestos" | "calidad" | "usuarios" | "proveedores" | "experiencias";
+const TABS: [Tab, string][] = [["sistema", "Sistema"], ["resumen", "Resumen"], ["agentes", "Agentes"], ["ejecuciones", "Ejecuciones"], ["costes", "Costes"],
   ["presupuestos", "Presupuestos"], ["calidad", "Calidad de citas"], ["usuarios", "Usuarios"], ["proveedores", "Modelos y conectores"], ["experiencias", "Publicaciones"]];
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -22,11 +22,11 @@ function Table({ rows, cols }: { rows: any[]; cols: [string, string, ((r: any) =
 export default function Admin() {
   const { session, ready } = useAuth();
   const token = session?.token;
-  const [tab, setTab] = useState<Tab>("resumen");
+  const [tab, setTab] = useState<Tab>("sistema");
   const [loaded, setLoaded] = useState<{ tab: Tab; data: any } | null>(null);
   const data = loaded?.tab === tab ? loaded.data : null;  // nunca renderiza una pestaña con datos de otra
   const [err, setErr] = useState<string | null>(null);
-  const path: Record<Tab, string> = { resumen: "overview", agentes: "agents", ejecuciones: "runs", costes: "costs", presupuestos: "budgets",
+  const path: Record<Tab, string> = { sistema: "system", resumen: "overview", agentes: "agents", ejecuciones: "runs", costes: "costs", presupuestos: "budgets",
     calidad: "quality", usuarios: "users", proveedores: "providers", experiencias: "experiences" };
   const load = useCallback(() => {
     if (!token) return;
@@ -49,6 +49,39 @@ export default function Admin() {
         <button key={k} role="tab" aria-selected={tab === k} className={`btn ${tab === k ? "btn-primary" : ""}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{l}</button>))}</nav>
       {err && <p role="alert" className="mt-3 text-sm text-rose-700">{err}</p>}
       {!data ? <p className="muted mt-6">Cargando…</p> : <div className="mt-6">
+        {tab === "sistema" && (
+          <div className="grid gap-4 text-left md:grid-cols-2 lg:grid-cols-3">
+            <div className="card p-5"><h2 className="text-lg font-semibold">Worker del HARNESS</h2>
+              <p className={`mt-2 text-2xl font-bold ${data.worker.healthy ? "text-emerald-700" : "text-rose-700"}`}>
+                {!data.worker.enabled ? "Desactivado" : data.worker.healthy ? "● Funcionando" : "● Detenido"}</p>
+              <p className="muted text-sm">Última vuelta hace {data.worker.seconds_since_last_loop ?? "—"} s · {data.worker.processed} ejecuciones · {data.worker.failures} fallos</p>
+              {data.worker.last_error && <p className="mt-1 text-sm text-rose-700">{data.worker.last_error}</p>}</div>
+            <div className="card p-5"><h2 className="text-lg font-semibold">Cola y ejecuciones</h2>
+              <ul className="mt-2 space-y-1 text-sm">
+                <li>En cola: <strong>{data.runs.queued}</strong> · activas: <strong>{data.runs.active}</strong></li>
+                <li className={data.runs.stuck ? "text-rose-700 font-semibold" : ""}>Atascadas (&gt;15 min): {data.runs.stuck}</li>
+                <li>Esperando aprobación: {data.runs.awaiting_approval}</li>
+                <li>Últimas 24 h: {data.runs.ok_24h} completadas · {data.runs.no_evidence_24h} sin evidencia · {data.runs.failed_24h} fallidas</li>
+              </ul></div>
+            <div className="card p-5"><h2 className="text-lg font-semibold">Gasto de Gemini (24 h)</h2>
+              <p className="mt-2 text-2xl font-bold">{formatUsd(data.spend_24h.gemini_usd)}</p>
+              <p className="muted text-sm">{data.spend_24h.gemini_calls} llamadas · {data.spend_24h.gemini_tokens} tokens · modelo {data.llm.model}{data.llm.gemini_configured ? "" : " (sin clave)"}</p></div>
+            <div className="card p-5"><h2 className="text-lg font-semibold">Base de datos y versión</h2>
+              <p className="mt-2 text-sm">Latencia: <strong>{data.db_latency_ms} ms</strong></p>
+              <p className="text-sm">Versión: <span className="font-mono">{data.version}</span> · entorno {data.env}</p>
+              <p className="text-sm">En marcha desde hace {Math.round(data.uptime_s / 60)} min</p></div>
+            <div className="card p-5"><h2 className="text-lg font-semibold">Búsqueda semántica</h2>
+              <p className="mt-2 text-sm">Modelo activo: <span className="font-mono">{data.embeddings.active}</span></p>
+              <ul className="mt-1 text-sm">{data.embeddings.chunks_by_model.map((m: any) => <li key={m.embedding_model}>{m.embedding_model}: {m.n} fragmentos</li>)}</ul></div>
+            <div className="card p-5"><h2 className="text-lg font-semibold">Revisión y límites</h2>
+              <p className="mt-2 text-sm"><Link className="underline" href="/revision">{data.claims_pending_review} afirmaciones de IA pendientes de revisión</Link></p>
+              <p className="text-sm">Límite: {data.limits.rate_limit_per_minute || "sin límite"} peticiones/min por IP · {data.limits.investigations_per_hour || "sin límite"} investigaciones/h por usuario</p>
+              <p className="text-sm">Repositorios: {data.connectors.join(", ") || "ninguno"}</p></div>
+            <div className="card p-5 md:col-span-2 lg:col-span-3"><h2 className="text-lg font-semibold">Errores recientes</h2>
+              <ul className="mt-2 space-y-1 text-sm">{data.recent_errors.length ? data.recent_errors.map((e: any, i: number) =>
+                <li key={i}><Link className="underline" href={`/ejecuciones/${e.run_id}`}>{e.task_key ?? "ejecución"}</Link> · {formatDate(e.created_at)}: {e.message}</li>)
+                : <li className="muted">Sin errores registrados</li>}</ul></div>
+          </div>)}
         {tab === "resumen" && (
           <div className="grid gap-4 md:grid-cols-3">
             <div className="card p-4"><h2 className="font-semibold">Gasto</h2><p className="text-2xl">{formatUsd(data.spend.day)} <span className="muted text-sm">hoy</span></p>

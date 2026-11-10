@@ -1,0 +1,43 @@
+# Blueprint de Render para la API de CIENCIA Y DIOS.
+# Render → New → Blueprint → elige este repositorio. Te pedirá los valores marcados con sync: false.
+# Genera esos valores desde tu PC con:  .\.venv\Scripts\python -m cdd.render_env   (en apps\api)
+services:
+  - type: web
+    name: ciencia-y-dios-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    region: virginia            # cerca de Supabase us-east-1
+    plan: free                  # cámbialo a starter para evitar que se duerma tras 15 min sin uso
+    branch: claude/serene-bohr-znv5a8
+    autoDeploy: true
+    healthCheckPath: /v1/health
+    envVars:
+      - key: CDD_ENV
+        value: production
+      - key: CDD_DEV_AUTH
+        value: "false"
+      - key: CDD_RUN_WORKER_IN_API
+        value: "true"
+      - key: CDD_CONNECTORS_ENABLED
+        value: '["openalex","crossref","europepmc","arxiv"]'
+      - key: CDD_DATABASE_URL          # Supabase · Session pooler (secreta)
+        sync: false
+      - key: CDD_SUPABASE_URL
+        sync: false
+      - key: CDD_SUPABASE_JWKS_URL
+        sync: false
+      - key: CDD_CORS_ORIGINS          # p. ej. ["https://ciencia-y-dios.vercel.app"]
+        sync: false
+      - key: CDD_GEMINI_API_KEY        # secreta
+        sync: false
+      - key: CDD_GEMINI_MODEL
+        sync: false
+      - key: CDD_GEMINI_INPUT_USD_PER_MTOK
+        sync: false
+      - key: CDD_GEMINI_OUTPUT_USD_PER_MTOK
+        sync: false
+      - key: CDD_OPENALEX_API_KEY      # secreta
+        sync: false
+      - key: CDD_CONTACT_EMAIL
+        sync: false

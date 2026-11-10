@@ -110,7 +110,7 @@ await page.getByTestId("run-state").filter({ hasText: "PUBLISHED" }).waitFor();
 const anon = await fetch(`${API}/v1/experiences/${expId}`);
 check("Publicación aprobada por el propietario, visible para visitantes", anon.status === 200);
 await page.goto(`${WEB}/admin`);
-await page.getByText("Ejecuciones por estado").waitFor();
+await page.getByText("Worker del HARNESS").waitFor();
 await page.screenshot({ path: `${SHOTS}/7-admin.png`, fullPage: true });
 
 await browser.close();

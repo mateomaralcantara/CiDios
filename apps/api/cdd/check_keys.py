@@ -168,6 +168,15 @@ def check_gemini(r: Report) -> None:
         r.ok(f"Clave válida ({mask_secret(s.gemini_api_key)}) · modelo {res.model} · coste de la prueba {res.usd:.6f} USD")
     except GeminiError as e:
         r.fail(str(e)[:220], "Crea o copia la clave en https://aistudio.google.com/apikey y revisa CDD_GEMINI_MODEL")
+        return
+    if s.embeddings_provider == "gemini":
+        try:
+            v = GeminiClient().embed(["prueba de embeddings"], "RETRIEVAL_QUERY")
+            r.ok(f"Embeddings con {s.gemini_embedding_model}: vector de {len(v[0])} dimensiones")
+        except GeminiError as e:
+            r.fail(f"Embeddings: {str(e)[:200]}", "Revisa CDD_GEMINI_EMBEDDING_MODEL o vuelve a CDD_EMBEDDINGS_PROVIDER=local")
+    else:
+        r.warn("Búsqueda semántica con el modelo local (léxico). Para usar Gemini: CDD_EMBEDDINGS_PROVIDER=gemini y python -m cdd.reembed")
 
 
 def check_openalex(r: Report, client: httpx.Client) -> None:

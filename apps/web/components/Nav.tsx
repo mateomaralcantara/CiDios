@@ -22,7 +22,9 @@ export function Nav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-  const links = session?.role === "owner" ? [...LINKS, { href: "/admin", label: "Centro de control" }] : LINKS;
+  const staff = session?.role === "owner" || session?.role === "editor";
+  const links = [...LINKS, ...(staff ? [{ href: "/revision", label: "Revisión" }] : []),
+                 ...(session?.role === "owner" ? [{ href: "/admin", label: "Centro de control" }] : [])];
   const isActive = (href: string) => (href === "/" ? path === "/" || path?.startsWith("/areas") : path?.startsWith(href));
   return (
     <header className="ui sticky top-0 z-30 border-b backdrop-blur-md"

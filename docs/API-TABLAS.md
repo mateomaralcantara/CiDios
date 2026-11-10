@@ -21,6 +21,7 @@ Además de la API REST directa, la API propia del proyecto (FastAPI, `/v1/...`) 
 | [`agent_definitions`](#agent_definitions) | Registro de los 40 agentes: contrato, herramientas autorizadas, versión, costes y estado. | — | leer (todas las filas); modificar (solo propietario) |
 | [`bibliographic_references`](#bibliographic_references) | Referencias bibliográficas externas (libros, artículos, sitios) con estado de verificación del identificador. | leer (todas las filas) | leer (todas las filas); crear (solo editor o propietario); modificar (solo editor o propietario); borrar (solo editor o propietario) |
 | [`budget_policies`](#budget_policies) | Políticas de presupuesto (global, usuario, investigación, agente, proveedor; diario/mensual/por ejecución). | — | leer (solo propietario); crear (solo propietario); modificar (solo propietario); borrar (solo propietario) |
+| [`claim_reviews`](#claim_reviews) | Historial de revisión editorial: quién aprobó, corrigió o rechazó cada afirmación, con el estado anterior. | — | leer (solo editor o propietario); crear (según condición) |
 | [`claims`](#claims) | Afirmaciones con categoría epistémica, disciplina, fechas y su precisión, consenso e incertidumbre. | leer (según condición) | leer (según condición); crear (solo editor o propietario); modificar (solo editor o propietario); borrar (solo editor o propietario) |
 | [`cost_ledger`](#cost_ledger) | Libro de costes: estimaciones, gastos confirmados, tokens, proveedor, modelo y aciertos de caché. | — | leer (según condición) |
 | [`document_chunks`](#document_chunks) | Fragmentos indexados de cada documento (texto, localizador, tsvector, embedding, riesgo de inyección). | leer (según condición) | leer (según condición); crear (según condición); modificar (según condición); borrar (según condición) |
@@ -179,6 +180,45 @@ curl "$SUPABASE_URL/rest/v1/budget_policies?select=*&limit=10" \
 const { data, error } = await supabase.from('budget_policies').select('*').limit(10)
 ```
 
+## claim_reviews
+
+Historial de revisión editorial: quién aprobó, corrigió o rechazó cada afirmación, con el estado anterior.
+
+RLS: **activado**
+
+| Columna | Tipo | Nulo | Por defecto |
+|---|---|---|---|
+| `id` | `uuid` | no | `gen_random_uuid()` |
+| `claim_id` | `uuid` | no |  |
+| `reviewer_id` | `uuid` | sí |  |
+| `action` | `text` | no |  |
+| `previous` | `jsonb` | no | `'{}'::jsonb` |
+| `changes` | `jsonb` | no | `'{}'::jsonb` |
+| `note` | `text` | no | `''::text` |
+| `created_at` | `timestamp with time zone` | no | `now()` |
+
+**Claves y relaciones**
+
+- Foránea: `FOREIGN KEY (reviewer_id) REFERENCES auth.users(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (claim_id) REFERENCES claims(id) ON DELETE CASCADE`
+- Primaria: `PRIMARY KEY (id)`
+
+**Políticas RLS**
+
+- `reviews_staff_insert` — usuario autenticado puede **crear** si `(is_staff() AND (reviewer_id = auth.uid()))`
+- `reviews_staff_read` — usuario autenticado puede **leer** si `is_staff()`
+
+**Ejemplos**
+
+```bash
+curl "$SUPABASE_URL/rest/v1/claim_reviews?select=*&limit=10" \
+  -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+```ts
+const { data, error } = await supabase.from('claim_reviews').select('*').limit(10)
+```
+
 ## claims
 
 Afirmaciones con categoría epistémica, disciplina, fechas y su precisión, consenso e incertidumbre.
@@ -216,10 +256,10 @@ RLS: **activado**
 
 **Claves y relaciones**
 
+- Foránea: `FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (place_entity_id) REFERENCES entities(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (subject_entity_id) REFERENCES entities(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
-- Foránea: `FOREIGN KEY (place_entity_id) REFERENCES entities(id) ON DELETE SET NULL`
-- Foránea: `FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL`
 - Primaria: `PRIMARY KEY (id)`
 - Única: `UNIQUE (slug)`
@@ -364,11 +404,11 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE SET NULL`
 - Foránea: `FOREIGN KEY (license_code) REFERENCES licenses(code)`
+- Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE SET NULL`
 - Primaria: `PRIMARY KEY (id)`
-- Única: `UNIQUE (slug)`
 - Única: `UNIQUE (content_sha256)`
+- Única: `UNIQUE (slug)`
 
 **Políticas RLS**
 
@@ -446,8 +486,8 @@ RLS: **activado**
 **Claves y relaciones**
 
 - Foránea: `FOREIGN KEY (subject_id) REFERENCES entities(id) ON DELETE CASCADE`
-- Foránea: `FOREIGN KEY (object_id) REFERENCES entities(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (evidence_claim_id) REFERENCES claims(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (object_id) REFERENCES entities(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 - Única: `UNIQUE (subject_id, predicate, object_id)`
 
@@ -489,9 +529,9 @@ RLS: **activado**
 
 **Claves y relaciones**
 
+- Foránea: `FOREIGN KEY (claim_id) REFERENCES claims(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (chunk_id) REFERENCES document_chunks(id) ON DELETE RESTRICT`
 - Foránea: `FOREIGN KEY (reference_id) REFERENCES bibliographic_references(id) ON DELETE SET NULL`
-- Foránea: `FOREIGN KEY (claim_id) REFERENCES claims(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 
 **Políticas RLS**
@@ -535,8 +575,8 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE SET NULL`
+- Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (published_by) REFERENCES auth.users(id)`
 - Primaria: `PRIMARY KEY (id)`
 
@@ -667,8 +707,8 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (investigation_id) REFERENCES investigations(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (approved_by) REFERENCES auth.users(id)`
+- Foránea: `FOREIGN KEY (investigation_id) REFERENCES investigations(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 
@@ -718,8 +758,8 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (agent_code) REFERENCES agent_definitions(code)`
+- Foránea: `FOREIGN KEY (run_id) REFERENCES harness_runs(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 - Única: `UNIQUE (run_id, task_key)`
 
@@ -799,8 +839,8 @@ RLS: **activado**
 
 **Claves y relaciones**
 
-- Foránea: `FOREIGN KEY (experience_id) REFERENCES experiences(id) ON DELETE CASCADE`
 - Foránea: `FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE`
+- Foránea: `FOREIGN KEY (experience_id) REFERENCES experiences(id) ON DELETE CASCADE`
 - Primaria: `PRIMARY KEY (id)`
 - Única: `UNIQUE (user_id, experience_id)`
 
@@ -1025,7 +1065,7 @@ const { data, error } = await supabase.from('user_roles').select('*').limit(10)
 
 Búsqueda textual, semántica o híbrida sobre la biblioteca (respeta RLS). Llamable por RPC.
 
-- Argumentos: `query_text text, query_embedding vector, match_count integer DEFAULT 10, mode text DEFAULT 'hybrid'::text`
+- Argumentos: `query_text text, query_embedding vector, match_count integer DEFAULT 10, mode text DEFAULT 'hybrid'::text, embedding_model text DEFAULT NULL::text`
 - Devuelve: `TABLE(chunk_id uuid, document_id uuid, document_title text, locator text, content text, text_rank real, semantic_score real, score real, injection_risk boolean)`
 
 ### is_owner
