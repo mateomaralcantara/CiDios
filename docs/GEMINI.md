@@ -85,6 +85,13 @@ El seed activa los nuevos agentes operativos: el descubridor bibliográfico, el 
 ```
 Debe mostrar `✓ responde (gemini-…)` y `✓` en cada repositorio. La llamada de prueba a Gemini cuesta fracciones de céntimo.
 
+### 6 bis. Comprueba todas las claves de una vez
+```bash
+powershell -ExecutionPolicy Bypass -File C:\Users\martin\Desktop\VSC\BestS\cidios-app\probar-claves.ps1
+```
+Prueba la base de datos, Supabase Auth, la clave pública de la web, que la web no tenga claves secretas, Gemini,
+OpenAlex, los repositorios y la API. Nunca muestra una clave completa; cada ✗ indica cómo arreglarlo.
+
 ### 7. Arranca y prueba
 ```bash
 .\.venv\Scripts\uvicorn cdd.main:app --port 8000
