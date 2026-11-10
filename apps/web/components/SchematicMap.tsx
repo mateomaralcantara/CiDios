@@ -14,15 +14,15 @@ export function SchematicMap({ map, active, onSelect }: { map: MapSpec; active?:
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full ui" role="img" aria-label="Mapa esquemático de lugares relacionados">
         <rect x="0" y="0" width={W} height={H} fill="transparent" />
         {gridLon.map((l) => (<g key={`lo${l}`}><line x1={x(l)} x2={x(l)} y1={pad} y2={H - pad} stroke="var(--line)" />
-          <text x={x(l) + 2} y={H - 8} fontSize="10" fill="var(--muted)">{l}°</text></g>))}
+          <text x={x(l) + 2} y={H - 8} fontSize="13" fill="var(--muted)">{l}°</text></g>))}
         {gridLat.map((l) => (<g key={`la${l}`}><line y1={y(l)} y2={y(l)} x1={pad} x2={W - pad} stroke="var(--line)" />
-          <text x={4} y={y(l) - 2} fontSize="10" fill="var(--muted)">{l}°</text></g>))}
+          <text x={4} y={y(l) - 2} fontSize="13" fill="var(--muted)">{l}°</text></g>))}
         {map.points.map((p) => {
           const on = !active || p.claim_ids.some((c) => active.has(c));
           return (
             <g key={p.name} onClick={() => onSelect?.(p.name)} style={{ cursor: onSelect ? "pointer" : undefined }} opacity={on ? 1 : 0.25}>
               <circle cx={x(p.lon)} cy={y(p.lat)} r={4 + Math.min(p.claim_ids.length, 6)} fill="var(--accent)" fillOpacity="0.35" stroke="var(--accent)" />
-              <text x={x(p.lon) + 9} y={y(p.lat) + 4} fontSize="11" fill="var(--fg)">{p.name}</text>
+              <text x={x(p.lon) + 9} y={y(p.lat) + 5} fontSize="14" fontWeight="600" fill="var(--fg)">{p.name}</text>
             </g>
           );
         })}

@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth";
 function explain(raw: string): string {
   const m = raw.toLowerCase();
   if (m.includes("invalid login credentials"))
-    return "Correo o contraseña incorrectos, o la cuenta todavía no existe. Si es tu primera vez, usa «Crear cuenta».";
+    return "Correo o contraseña incorrectos, o la cuenta todavía no existe. Si es tu primera vez, usa la pestaña «Soy nuevo».";
   if (m.includes("email not confirmed"))
     return "Tu cuenta existe pero falta confirmar el correo. Abre el enlace que te enviamos o pulsa «Reenviar confirmación».";
   if (m.includes("already registered")) return "Ya existe una cuenta con ese correo. Usa «Entrar».";
@@ -51,30 +51,39 @@ export default function Entrar() {
   });
 
   return (
-    <div className="mx-auto max-w-md">
-      <h1 className="text-3xl font-bold">{mode === "login" ? "Entrar" : "Crear cuenta"}</h1>
+    <div className="mx-auto max-w-lg">
+      <h1>{mode === "login" ? "Entrar" : "Crear cuenta"}</h1>
+      <p className="muted mt-2 text-lg">
+        {mode === "login" ? "Accede para investigar, guardar tu progreso y consultar tus fuentes."
+          : "Crea tu cuenta gratuita. Te enviaremos un correo para confirmarla."}
+      </p>
       {supabase ? (
         <>
-          <div className="ui mt-4 flex justify-center gap-2" role="tablist">
-            <button role="tab" aria-selected={mode === "login"} className={`btn ${mode === "login" ? "btn-primary" : ""}`}
-              onClick={() => { setMode("login"); setMsg(null); }} data-testid="tab-login">Ya tengo cuenta</button>
-            <button role="tab" aria-selected={mode === "signup"} className={`btn ${mode === "signup" ? "btn-primary" : ""}`}
-              onClick={() => { setMode("signup"); setMsg(null); }} data-testid="tab-signup">Soy nuevo</button>
+          <div className="ui mx-auto mt-6 inline-flex rounded-full border p-1" role="tablist"
+            style={{ borderColor: "var(--line)", background: "var(--bg-2)" }}>
+            {(["login", "signup"] as const).map((m) => (
+              <button key={m} role="tab" aria-selected={mode === m} data-testid={m === "login" ? "tab-login" : "tab-signup"}
+                onClick={() => { setMode(m); setMsg(null); }}
+                className="rounded-full px-5 py-2 text-base font-semibold transition"
+                style={mode === m ? { background: "var(--card)", color: "var(--accent)", boxShadow: "var(--shadow)" } : { color: "var(--muted)" }}>
+                {m === "login" ? "Ya tengo cuenta" : "Soy nuevo"}
+              </button>
+            ))}
           </div>
-          <form className="ui card mt-4 space-y-3 p-5" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-            <label className="block text-sm">Correo
-              <input className="input mt-1" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value.trim())} />
+          <form className="ui card mt-5 space-y-5 p-6 text-left sm:p-8" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+            <label className="block text-base">Correo electrónico
+              <input className="input mt-2" type="email" placeholder="tu@correo.com" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value.trim())} />
             </label>
-            <label className="block text-sm">Contraseña {mode === "signup" && <span className="muted">(mínimo 8 caracteres)</span>}
-              <input className="input mt-1" type={show ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"}
+            <label className="block text-base">Contraseña {mode === "signup" && <span className="muted font-normal">(mínimo 8 caracteres)</span>}
+              <input className="input mt-2" type={show ? "text" : "password"} placeholder="••••••••" autoComplete={mode === "login" ? "current-password" : "new-password"}
                 required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
             </label>
-            <label className="flex items-center justify-center gap-2 text-xs"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Mostrar contraseña</label>
-            <button className="btn btn-primary w-full justify-center" disabled={busy} data-testid="submit-auth">
+            <label className="muted flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Mostrar contraseña</label>
+            <button className="btn btn-primary w-full py-3 text-lg" disabled={busy} data-testid="submit-auth">
               {busy ? "Un momento…" : mode === "login" ? "Entrar" : "Crear cuenta"}
             </button>
             {mode === "login" && (
-              <div className="flex flex-wrap justify-center gap-3 text-xs">
+              <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 border-t pt-4 text-sm" style={{ borderColor: "var(--line)" }}>
                 <button type="button" className="underline" disabled={!email || busy}
                   onClick={() => run(async () => { await resendConfirmation(email); setMsg({ kind: "ok", text: `Correo de confirmación reenviado a ${email}.` }); })}>
                   Reenviar confirmación</button>
@@ -89,10 +98,12 @@ export default function Entrar() {
         <p className="ui muted mt-4 text-sm">Supabase Auth no está configurado en este despliegue (NEXT_PUBLIC_SUPABASE_URL).</p>
       )}
       {msg && <p role={msg.kind === "error" ? "alert" : "status"} data-testid="auth-message"
-        className={`ui mt-4 text-sm ${msg.kind === "error" ? "text-rose-700" : "text-emerald-700"}`}>{msg.text}</p>}
+        className={`ui mx-auto mt-5 max-w-lg rounded-xl border px-4 py-3 text-base ${msg.kind === "error"
+          ? "border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-200"
+          : "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"}`}>{msg.text}</p>}
       {devAuth && (
-        <div className="ui card mt-6 p-5">
-          <p className="text-sm font-semibold">Modo desarrollo</p>
+        <div className="ui card mt-8 p-6">
+          <p className="font-semibold">Modo desarrollo</p>
           <p className="muted text-xs">Tokens locales firmados por la API; deshabilitados en staging y producción.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button className="btn" data-testid="dev-owner" onClick={() => run(async () => { await signInDev("owner"); router.push("/investigar"); })}>Propietario</button>

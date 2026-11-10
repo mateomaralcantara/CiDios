@@ -2,8 +2,68 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Diseño centrado. Va en @layer base para que cualquier utilidad de Tailwind (text-left, justify-start…) pueda anularlo. */
+/* Textos pequeños más legibles en toda la web (sobre una base de 18 px) */
+@theme {
+  --text-xs: 0.8125rem;   --text-xs--line-height: 1.55;   /* ≈ 14.6 px */
+  --text-sm: 0.9375rem;   --text-sm--line-height: 1.6;    /* ≈ 16.9 px */
+  --text-base: 1rem;      --text-base--line-height: 1.7;  /* 18 px */
+  --text-lg: 1.15rem;     --text-lg--line-height: 1.65;
+}
+
+/* =====================================================================
+   CIENCIA Y DIOS — sistema visual
+   Tipografía editorial (serif) para el contenido y sans para la interfaz.
+   Todos los tamaños de Tailwind son rem: al subir la base a 18 px crece todo el texto.
+   ===================================================================== */
+
+:root {
+  --bg: #f8f5ef;           /* papel cálido */
+  --bg-2: #f1ebe0;
+  --fg: #1d1a16;
+  --muted: #5d554b;
+  --card: #fffdf9;
+  --line: #e4dccf;
+  --accent: #8a2c0d;       /* granate */
+  --accent-strong: #6e220a;
+  --accent-2: #c2770f;     /* oro */
+  --accent-soft: #f6e7d8;
+  --ring: #d99a2b;
+  --shadow: 0 1px 2px rgba(60, 40, 20, .06), 0 6px 20px -8px rgba(60, 40, 20, .18);
+  --shadow-lg: 0 2px 4px rgba(60, 40, 20, .06), 0 18px 40px -16px rgba(60, 40, 20, .28);
+  --radius: 1rem;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, Cambria, "Times New Roman", serif;
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12100e; --bg-2: #1a1714; --fg: #f3eee7; --muted: #b3a99c; --card: #1d1a17; --line: #34302b;
+    --accent: #f0a26c; --accent-strong: #f7b98c; --accent-2: #f2c14e; --accent-soft: #3a2619; --ring: #f2c14e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -10px rgba(0, 0, 0, .6);
+    --shadow-lg: 0 2px 4px rgba(0, 0, 0, .4), 0 20px 44px -18px rgba(0, 0, 0, .7);
+  }
+}
+
 @layer base {
+  html { font-size: 112.5%; -webkit-text-size-adjust: 100%; }          /* 18 px */
+  @media (min-width: 1600px) { html { font-size: 118.75%; } }          /* 19 px en pantallas grandes */
+  @media (max-width: 480px) { html { font-size: 106.25%; } }           /* 17 px en móvil */
+  html { background: var(--bg); color: var(--fg); }
+  body {
+    font-family: var(--font-serif); line-height: 1.7; text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(1200px 500px at 50% -200px, var(--accent-soft), transparent 70%),
+      var(--bg);
+  }
+  h1, h2, h3 { font-family: var(--font-serif); color: var(--fg); letter-spacing: -0.01em; line-height: 1.2; text-wrap: balance; }
+  h1 { font-size: clamp(2.1rem, 1.4rem + 2.4vw, 3.2rem); font-weight: 700; }
+  h2 { font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); font-weight: 650; }
+  h3 { font-size: 1.3rem; font-weight: 650; }
+  p { text-wrap: pretty; }
+  a { text-underline-offset: 3px; }
+  ::selection { background: var(--accent-2); color: #1d1a16; }
+
+  /* Diseño centrado (las utilidades de Tailwind pueden anularlo) */
   main, footer { text-align: center; }
   main .flex-wrap, main [role="tablist"], main [role="group"] { justify-content: center; }
   main [class*="max-w-"] { margin-left: auto; margin-right: auto; }
@@ -12,28 +72,58 @@
   main table, main blockquote, main .list-disc, main .prose-left, main input, main textarea, main select { text-align: left; }
   main .list-disc { width: fit-content; max-width: 48rem; margin-left: auto; margin-right: auto; }
   main table { margin-left: auto; margin-right: auto; }
+  main table th { font-family: var(--font-sans); font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  main table td, main table th { padding: .6rem .7rem !important; }
+  main table tr { border-color: var(--line); }
+  main blockquote { line-height: 1.65; }
 }
 
-:root {
-  --bg: #fbfaf7; --fg: #1c1917; --muted: #57534e; --card: #ffffff; --line: #e7e5e4; --accent: #7c2d12; --accent-2: #b45309;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #0f0e0d; --fg: #f5f5f4; --muted: #a8a29e; --card: #1c1917; --line: #292524; --accent: #fdba74; --accent-2: #fbbf24; }
-}
-html { background: var(--bg); color: var(--fg); }
-body { font-family: ui-serif, Georgia, "Times New Roman", serif; }
-.ui { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 0.9rem; }
+/* ---------- utilidades del proyecto ---------- */
+.ui { font-family: var(--font-sans); }
 .muted { color: var(--muted); }
 .accent { color: var(--accent); }
-.btn { font-family: ui-sans-serif, system-ui, sans-serif; display: inline-flex; align-items: center; gap: .4rem; border-radius: .6rem;
-  padding: .5rem .9rem; font-size: .9rem; font-weight: 600; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
-.btn:hover { border-color: var(--accent); }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn-primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
-.btn-primary:hover { filter: brightness(1.08); }
-.input { font-family: ui-sans-serif, system-ui, sans-serif; width: 100%; border: 1px solid var(--line); background: var(--card);
-  border-radius: .6rem; padding: .55rem .75rem; }
-.chip { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600; border-radius: 999px; padding: .12rem .55rem; display: inline-block; }
-:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+a.card:hover, button.card:hover:not(:disabled) { box-shadow: var(--shadow-lg); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); transform: translateY(-2px); }
+
+.btn {
+  font-family: var(--font-sans); display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  min-height: 2.75rem; padding: .6rem 1.15rem; border-radius: .8rem; font-size: 1rem; font-weight: 600; line-height: 1.2;
+  border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer;
+  box-shadow: 0 1px 1px rgba(60, 40, 20, .05);
+  transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong)); color: #fff8f0; border-color: var(--accent-strong);
+}
+.btn-primary:hover:not(:disabled) { color: #fff; filter: brightness(1.07); }
+@media (prefers-color-scheme: dark) { .btn-primary, .btn-primary:hover:not(:disabled) { color: #1d1208; } }
+
+.input {
+  font-family: var(--font-sans); width: 100%; min-height: 3rem; font-size: 1.05rem; color: var(--fg);
+  border: 1.5px solid var(--line); background: var(--card); border-radius: .8rem; padding: .7rem .95rem;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input::placeholder { color: color-mix(in srgb, var(--muted) 75%, transparent); }
+.input:hover { border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 30%, transparent); }
+textarea.input { line-height: 1.6; }
+select.input { width: auto; cursor: pointer; }
+
+.chip {
+  font-family: var(--font-sans); font-size: .8rem; font-weight: 600; line-height: 1.4; border-radius: 999px;
+  padding: .2rem .7rem; display: inline-block; vertical-align: middle;
+}
+
+/* Etiquetas de formulario */
+label.block { font-family: var(--font-sans); font-weight: 600; }
+label input[type="checkbox"], label input[type="radio"] { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); }
+
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; border-radius: .4rem; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

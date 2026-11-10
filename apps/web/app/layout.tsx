@@ -18,8 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <a href="#main" className="sr-only focus:not-sr-only ui p-2">Saltar al contenido</a>
           <Nav />
-          <main id="main" className="mx-auto max-w-6xl px-4 pb-24 pt-6">{children}</main>
-          <footer className="ui muted mx-auto max-w-6xl px-4 pb-10 text-xs">
+          <main id="main" className="mx-auto max-w-6xl px-4 pb-24 pt-10 sm:px-6">{children}</main>
+          <footer className="ui muted mx-auto max-w-6xl border-t px-4 pb-12 pt-8 text-sm" style={{ borderColor: "var(--line)" }}>
             Ciencia y Dios · HARNESS SUPRA · Evidence Engine · Experience OS — Principio: la evidencia antes que la conclusión.
           </footer>
         </AuthProvider>
