@@ -45,6 +45,12 @@ def check_connection(url: str | None = None) -> None:
         raise DatabaseUnavailable(
             f"La cadena de conexión {_redact(url)} tiene más de una «@»: si tu contraseña contiene «@», "
             "escríbela como %40 (por ejemplo Clave@1 → Clave%401).")
+    env = get_settings().env
+    if env in ("staging", "production") and any(h in url for h in ("@localhost", "@127.0.0.1", "//localhost", "//127.0.0.1")):
+        raise DatabaseUnavailable(
+            f"CDD_DATABASE_URL apunta a {_redact(url)} en el entorno «{env}»: falta configurar la variable.\n"
+            "  → En Render: servicio → Environment → CDD_DATABASE_URL = la cadena del Session pooler de Supabase "
+            "(Connect → Session pooler, puerto 5432) y vuelve a desplegar.")
     try:
         with psycopg.connect(url, connect_timeout=5) as conn:
             conn.execute("select 1")
@@ -64,6 +70,10 @@ def check_connection(url: str | None = None) -> None:
         elif "tenant or user not found" in str(e).lower():
             hint = ("\n  → El pooler no reconoce el proyecto: revisa que el usuario sea postgres.<ref> y que el host "
                     "(región) sea exactamente el que muestra Supabase en Connect → Session pooler.")
+        elif "supabase.co" in url and ("unreachable" in str(e).lower() or "cannot assign" in str(e).lower()
+                                         or "could not translate host" in str(e).lower()):
+            hint = ("\n  → La conexión directa db.<ref>.supabase.co solo funciona por IPv6 y servidores como Render no la alcanzan. "
+                    "Usa la cadena del Session pooler (Connect → Session pooler: postgres.<ref>@aws-…pooler.supabase.com:5432).")
         elif "Connection refused" in str(e) or "timeout" in str(e).lower():
             hint = "\n  → No hay ninguna base escuchando. ¿Está Docker Desktop abierto y has ejecutado «docker compose up -d db»?"
         elif "does not exist" in str(e):
