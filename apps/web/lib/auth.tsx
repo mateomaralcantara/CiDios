@@ -9,7 +9,9 @@ interface AuthCtx {
   session: Session | null; ready: boolean; supabase: SupabaseClient | null; devAuth: boolean;
   signInDev: (who: "owner" | "user" | "user2") => Promise<void>;
   signInPassword: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<"logged_in" | "confirm_email" | "already_registered">;
+  resendConfirmation: (email: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -60,7 +62,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signUp: async (email, password) => {
       if (!supabase) throw new Error("Supabase no está configurado");
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email, password, options: { emailRedirectTo: `${window.location.origin}/entrar` },
+      });
+      if (error) throw error;
+      // Supabase no revela si el correo ya existe: devuelve un usuario sin identidades
+      if (data.user && (data.user.identities?.length ?? 0) === 0) return "already_registered";
+      if (data.session) { setSession(await fromToken(data.session.access_token)); return "logged_in"; }
+      return "confirm_email";
+    },
+    resendConfirmation: async (email) => {
+      if (!supabase) throw new Error("Supabase no está configurado");
+      const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${window.location.origin}/entrar` } });
+      if (error) throw error;
+    },
+    resetPassword: async (email) => {
+      if (!supabase) throw new Error("Supabase no está configurado");
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/entrar` });
       if (error) throw error;
     },
     signOut: async () => {
