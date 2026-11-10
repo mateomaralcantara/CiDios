@@ -13,9 +13,9 @@ export default function Home() {
   useEffect(() => { api<Topic[]>("/v1/topics").then(setTopics).catch(() => setTopics([])); }, []);
   return (
     <div>
-      <section className="py-8 text-center sm:py-14">
-        <p className="ui accent text-sm font-semibold uppercase tracking-[0.25em]">Enciclopedia universal inteligente</p>
-        <h1 className="accent mt-4 italic" style={{ fontSize: "clamp(2rem, 1.2rem + 3vw, 3.4rem)" }}>
+      <section className="pb-8 pt-2 text-center sm:pb-12 sm:pt-4">
+        <p className="ui accent text-sm font-semibold uppercase tracking-[0.12em]">Enciclopedia universal inteligente</p>
+        <h1 className="accent mt-2 italic" style={{ fontSize: "clamp(2rem, 1.2rem + 3vw, 3.4rem)" }}>
           La evidencia antes que la conclusión.
         </h1>
         <p className="muted mx-auto mt-5 max-w-3xl text-xl leading-relaxed">
