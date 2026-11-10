@@ -15,8 +15,9 @@ export default function Home() {
     <div>
       <section className="py-8 text-center sm:py-14">
         <p className="ui accent text-sm font-semibold uppercase tracking-[0.25em]">Enciclopedia universal inteligente</p>
-        <h1 className="mt-3 tracking-[0.08em]" style={{ fontSize: "clamp(2.6rem, 1.6rem + 4vw, 4.4rem)" }}>CIENCIA Y DIOS</h1>
-        <p className="accent mt-3 text-2xl italic md:text-3xl">La evidencia antes que la conclusión.</p>
+        <h1 className="accent mt-4 italic" style={{ fontSize: "clamp(2rem, 1.2rem + 3vw, 3.4rem)" }}>
+          La evidencia antes que la conclusión.
+        </h1>
         <p className="muted mx-auto mt-5 max-w-3xl text-xl leading-relaxed">
           Investiga las grandes preguntas sobre Dios, el universo, la vida y la conciencia. Cada afirmación muestra
           su categoría epistémica, sus fuentes verificables, las posturas en disputa y lo que todavía no sabemos.

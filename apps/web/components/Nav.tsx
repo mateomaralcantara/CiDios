@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Logo } from "@/components/Logo";
 import { useAuth } from "@/lib/auth";
 
 const LINKS = [
@@ -12,15 +14,31 @@ const LINKS = [
 export function Nav() {
   const { session, signOut } = useAuth();
   const path = usePathname();
+  // Marca grande arriba; se compacta suavemente al bajar para no ocupar media pantalla
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setCompact((c) => (c ? window.scrollY > 40 : window.scrollY > 140));
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const links = session?.role === "owner" ? [...LINKS, { href: "/admin", label: "Centro de control" }] : LINKS;
   const isActive = (href: string) => (href === "/" ? path === "/" || path?.startsWith("/areas") : path?.startsWith(href));
   return (
     <header className="ui sticky top-0 z-30 border-b backdrop-blur-md"
       style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 82%, transparent)" }}>
-      <nav className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-4 text-center" aria-label="Principal">
-        <Link href="/" className="flex items-center gap-3 text-[1.9rem] font-bold tracking-[0.2em] sm:text-[2.2rem]"
-          style={{ fontFamily: "var(--font-serif)" }}>
-          <img src="/icon.svg" alt="" width={44} height={44} className="rounded-xl shadow-sm" /> CIENCIA Y DIOS
+      <nav className={`mx-auto flex max-w-6xl flex-col items-center px-4 text-center transition-all duration-300 ${compact ? "gap-2 py-2 md:flex-row md:justify-between" : "gap-4 py-6"}`}
+        aria-label="Principal">
+        <Link href="/" aria-label="CIENCIA Y DIOS — inicio" data-testid="brand"
+          className={`flex flex-col items-center gap-3 sm:flex-row sm:gap-5 ${compact ? "sm:gap-3" : ""}`}>
+          <span className="transition-all duration-300" style={{ width: compact ? 48 : "clamp(84px, 9vw, 120px)" }}>
+            <Logo size={512} className="h-auto w-full drop-shadow-md" />
+          </span>
+          <span className="font-bold leading-none transition-all duration-300"
+            style={{ fontFamily: "var(--font-serif)", letterSpacing: "0.14em", color: "var(--fg)",
+                     fontSize: compact ? "clamp(1.3rem, 1rem + 1.4vw, 2rem)" : "clamp(2.1rem, 1rem + 5.2vw, 4.6rem)" }}>
+            CIENCIA <span style={{ color: "var(--accent)" }}>Y</span> DIOS
+          </span>
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {links.map((l) => {
