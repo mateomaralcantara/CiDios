@@ -1,11 +1,22 @@
 """Configuración centralizada. Los secretos solo se leen del entorno; nunca se exponen completos."""
 from __future__ import annotations
 
+import json
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+
+def _as_list(value: object) -> object:
+    """Acepta listas JSON («["a","b"]») y también texto plano separado por comas («a, b»)."""
+    if isinstance(value, str):
+        text = value.strip()
+        if text.startswith("["):
+            return json.loads(text)
+        return [x.strip().strip('"').strip("'").rstrip("/") for x in text.split(",") if x.strip()]
+    return value
 
 
 class Settings(BaseSettings):
@@ -24,7 +35,7 @@ class Settings(BaseSettings):
     dev_auth: bool = False
     dev_jwt_secret: str = Field(default="dev-only-insecure-secret-change-me-0123456789", repr=False)
 
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
 
     # --- LLM: Google Gemini (opcional). Sin clave, los agentes operan en modo determinista. ---
     gemini_api_key: str = Field(default="", repr=False)
@@ -46,7 +57,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = Field(default="", repr=False)
 
     # --- Fuentes externas (dimensiones 1 y 2) ---
-    connectors_enabled: list[str] = ["openalex", "crossref", "europepmc", "arxiv"]
+    connectors_enabled: Annotated[list[str], NoDecode] = ["openalex", "crossref", "europepmc", "arxiv"]
     connector_timeout_s: float = 20.0
     openalex_api_key: str = Field(default="", repr=False)   # gratuita: https://openalex.org (Authorization: Bearer)
     contact_email: str = ""                                  # tu correo para el «polite pool» de Crossref/OpenAlex (opcional)
@@ -64,6 +75,11 @@ class Settings(BaseSettings):
     default_run_budget_usd: float = 1.0
     worker_poll_interval_s: float = 0.5
     run_worker_in_api: bool = True
+
+    @field_validator("cors_origins", "connectors_enabled", mode="before")
+    @classmethod
+    def _split_lists(cls, value: object) -> object:
+        return _as_list(value)
 
 
 @lru_cache

@@ -47,3 +47,13 @@ def test_system_panel(client):
     assert {"worker", "runs", "spend_24h", "recent_errors", "embeddings", "db_latency_ms", "limits"} <= set(d)
     assert d["embeddings"]["active"] == "hashing-lexical-v1" and d["db_latency_ms"] >= 0
     assert client.get("/v1/health").json()["worker"] == "disabled"   # en pruebas el worker no corre dentro de la API
+
+
+def test_list_settings_accept_plain_text_and_json(monkeypatch):
+    """Render guarda las variables como texto: «a, b» y «["a","b"]» deben funcionar (antes la API no arrancaba)."""
+    from cdd.config import Settings
+    monkeypatch.setenv("CDD_CORS_ORIGINS", "https://ciencia-y-dios.vercel.app/, http://localhost:3000")
+    monkeypatch.setenv("CDD_CONNECTORS_ENABLED", '["openalex","arxiv"]')
+    s = Settings(_env_file=None)
+    assert s.cors_origins == ["https://ciencia-y-dios.vercel.app", "http://localhost:3000"]
+    assert s.connectors_enabled == ["openalex", "arxiv"]
