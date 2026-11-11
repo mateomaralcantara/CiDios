@@ -5,7 +5,7 @@ import json
 from functools import lru_cache
 from typing import Annotated, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -75,6 +75,13 @@ class Settings(BaseSettings):
     default_run_budget_usd: float = 1.0
     worker_poll_interval_s: float = 0.5
     run_worker_in_api: bool = True
+
+    @model_validator(mode="after")
+    def _default_jwks(self) -> Settings:
+        # Supabase publica sus claves públicas en una ruta fija: con CDD_SUPABASE_URL basta
+        if not self.supabase_jwks_url and self.supabase_url.startswith("https://"):
+            self.supabase_jwks_url = self.supabase_url.rstrip("/") + "/auth/v1/.well-known/jwks.json"
+        return self
 
     @field_validator("cors_origins", "connectors_enabled", mode="before")
     @classmethod

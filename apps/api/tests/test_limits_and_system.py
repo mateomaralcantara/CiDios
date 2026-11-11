@@ -76,3 +76,12 @@ def test_rejected_token_explains_why(monkeypatch):
     assert e.value.status_code == 401
     assert "CDD_SUPABASE_JWT_SECRET" in e.value.detail and "HS256" in e.value.detail
     assert "jwks_url" in auth.auth_config()
+
+
+def test_jwks_url_derived_from_supabase_url(monkeypatch):
+    from cdd.config import Settings
+    monkeypatch.setenv("CDD_SUPABASE_URL", "https://abcdefgh.supabase.co/")
+    monkeypatch.delenv("CDD_SUPABASE_JWKS_URL", raising=False)
+    assert Settings(_env_file=None).supabase_jwks_url == "https://abcdefgh.supabase.co/auth/v1/.well-known/jwks.json"
+    monkeypatch.setenv("CDD_SUPABASE_JWKS_URL", "https://otra/jwks.json")
+    assert Settings(_env_file=None).supabase_jwks_url == "https://otra/jwks.json"
