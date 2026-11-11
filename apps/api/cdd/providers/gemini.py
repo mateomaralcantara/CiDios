@@ -93,6 +93,9 @@ class GeminiClient:
                 t0 = time.monotonic()
                 try:
                     r = client.post(url, json=body)
+                except httpx.LocalProtocolError as e:
+                    raise GeminiError("La clave CDD_GEMINI_API_KEY contiene caracteres no válidos (espacios, saltos de línea "
+                                      "o comillas). Vuelve a copiarla sin nada alrededor.") from e
                 except httpx.HTTPError as e:
                     last = GeminiError(f"No se pudo contactar con Gemini: {type(e).__name__}", retryable=True)
                 else:

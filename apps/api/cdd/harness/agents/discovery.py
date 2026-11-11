@@ -36,14 +36,19 @@ QUERY_SCHEMA = {"type": "OBJECT", "properties": {
 def plan_queries(question: str, topic: str | None, use_llm: bool = True) -> tuple[list[str], list[dict]]:
     """Consultas bibliográficas. Con Gemini: 3-5 en inglés y 1-2 en español. Sin Gemini: respaldo determinista."""
     usage: list[dict] = []
+    res = None
     if use_llm and gemini.configured():
-        res = gemini.GeminiClient().generate_json(
-            "Eres un bibliotecario académico. Generas consultas breves (3-8 palabras clave) para buscar literatura "
-            "académica revisada por pares en OpenAlex, Crossref, Europe PMC y arXiv. Sin operadores booleanos.",
-            f"Pregunta de investigación: {question}\nÁrea: {topic or 'no identificada'}\n"
-            "Devuelve 3-5 consultas en inglés (queries_en) y 1-2 en español (queries_es) que cubran los aspectos "
-            "principales de la pregunta, incluidas posturas en desacuerdo.",
-            QUERY_SCHEMA, max_output_tokens=512)
+        try:
+            res = gemini.GeminiClient().generate_json(
+                "Eres un bibliotecario académico. Generas consultas breves (3-8 palabras clave) para buscar literatura "
+                "académica revisada por pares en OpenAlex, Crossref, Europe PMC y arXiv. Sin operadores booleanos.",
+                f"Pregunta de investigación: {question}\nÁrea: {topic or 'no identificada'}\n"
+                "Devuelve 3-5 consultas en inglés (queries_en) y 1-2 en español (queries_es) que cubran los aspectos "
+                "principales de la pregunta, incluidas posturas en desacuerdo.",
+                QUERY_SCHEMA, max_output_tokens=512)
+        except gemini.GeminiError:
+            res = None   # sin Gemini se usan las consultas deterministas de abajo
+    if res is not None:
         usage.append(res.usage())
         qs = [q.strip() for q in (res.data.get("queries_en", [])[:5] + res.data.get("queries_es", [])[:2]) if q.strip()]
         if qs:

@@ -99,10 +99,16 @@ def area_specialist(ctx: AgentContext) -> dict[str, Any]:
                                          f"sección: {r['locator']}]\n{r['content']}") for k, r in ref.items())
     role = ROLES.get(ctx.agent_code, "investigador")
     ctx.tool("llm.generate")
-    res = gemini.GeminiClient().generate_json(
-        SYSTEM.format(role=role, max_claims=s.llm_max_claims),
-        f"Pregunta de investigación: {question}\n\nFragmentos disponibles ({len(ref)}):\n\n{docs}",
-        SCHEMA, max_output_tokens=8192)
+    try:
+        res = gemini.GeminiClient().generate_json(
+            SYSTEM.format(role=role, max_claims=s.llm_max_claims),
+            f"Pregunta de investigación: {question}\n\nFragmentos disponibles ({len(ref)}):\n\n{docs}",
+            SCHEMA, max_output_tokens=8192)
+    except gemini.GeminiError as e:
+        # Sin Gemini la investigación sigue con el corpus verificado; se avisa en la traza en vez de fallar
+        ctx.log(f"Gemini no disponible, se continúa solo con fuentes verificadas: {e}", level="warning")
+        return {"claim_ids": [], "proposed": 0, "accepted": 0, "dropped": [], "unanswered": "", "_usage": [],
+                "llm_error": str(e)}
     proposed = res.data.get("claims", []) if isinstance(res.data, dict) else []
     accepted, dropped = [], []
     ctx.tool("evidence.write")

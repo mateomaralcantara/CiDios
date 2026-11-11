@@ -20,7 +20,8 @@ def _as_list(value: object) -> object:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="CDD_", env_file=".env", extra="ignore")
+    # str_strip_whitespace: al pegar valores en Render o en .env es fácil arrastrar espacios o saltos de línea
+    model_config = SettingsConfigDict(env_prefix="CDD_", env_file=".env", extra="ignore", str_strip_whitespace=True)
 
     env: Literal["development", "staging", "production", "test"] = "development"
     database_url: str = "postgresql://postgres@localhost:54329/cdd"
@@ -82,6 +83,15 @@ class Settings(BaseSettings):
         if not self.supabase_jwks_url and self.supabase_url.startswith("https://"):
             self.supabase_jwks_url = self.supabase_url.rstrip("/") + "/auth/v1/.well-known/jwks.json"
         return self
+
+    @field_validator("gemini_api_key", "openalex_api_key", "anthropic_api_key", "supabase_jwt_secret", "gemini_model",
+                     "database_url", "supabase_url", "supabase_jwks_url", mode="before")
+    @classmethod
+    def _clean_secret(cls, value: object) -> object:
+        # Quita espacios, saltos de línea y comillas que se cuelan al copiar y pegar
+        if isinstance(value, str):
+            return value.strip().strip('"').strip("'").strip()
+        return value
 
     @field_validator("cors_origins", "connectors_enabled", mode="before")
     @classmethod

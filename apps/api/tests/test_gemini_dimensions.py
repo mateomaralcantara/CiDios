@@ -198,3 +198,43 @@ def test_without_gemini_key_the_plan_stays_deterministic(user, monkeypatch):
     with service_tx() as c:
         keys = {t["task_key"] for t in c.execute("select task_key from public.harness_tasks where run_id=%s", (r["run_id"],))}
     assert "extract" not in keys and "acquire_published" not in keys and "bibliography" in keys
+
+
+def test_pasted_key_with_newline_is_cleaned(monkeypatch):
+    """Una clave pegada en Render con salto de línea o comillas provocaba LocalProtocolError en httpx."""
+    from cdd.config import Settings
+    monkeypatch.setenv("CDD_GEMINI_API_KEY", ' "AIzaFAKEKEY123"\n')
+    monkeypatch.setenv("CDD_GEMINI_MODEL", "gemini-test \n")
+    s = Settings(_env_file=None)
+    assert s.gemini_api_key == "AIzaFAKEKEY123" and s.gemini_model == "gemini-test"
+
+
+def test_plan_queries_falls_back_when_gemini_fails(monkeypatch):
+    from cdd.harness.agents import discovery
+    from cdd.providers import gemini
+
+    def boom(*a, **k):
+        raise gemini.GeminiError("caída simulada")
+    monkeypatch.setattr(gemini, "configured", lambda: True)
+    monkeypatch.setattr(gemini.GeminiClient, "__init__", lambda self, *a, **k: None)
+    monkeypatch.setattr(gemini.GeminiClient, "generate_json", boom)
+    qs, usage = discovery.plan_queries("¿Qué dicen los manuscritos del mar Muerto sobre Isaías?", None)
+    assert qs and usage == []
+
+
+def test_broken_gemini_does_not_fail_the_investigation(external, user, monkeypatch):
+    """Antes: «GeminiError: No se pudo contactar con Gemini: LocalProtocolError» → FAILED. Ahora sigue con fuentes verificadas."""
+    from cdd.providers import gemini
+
+    def broken(*a, **k):
+        raise gemini.GeminiError("La clave CDD_GEMINI_API_KEY contiene caracteres no válidos")
+    monkeypatch.setattr(gemini.GeminiClient, "generate_json", broken)
+    r = engine.create_investigation(user, QUESTION + " (Gemini roto)", force_new=True)
+    assert engine.process_run(r["run_id"]) in ("READY", "PARTIAL")
+    with service_tx() as c:
+        ex = c.execute("select status::text as status, output from public.harness_tasks where run_id=%s and task_key='extract'",
+                       (r["run_id"],)).fetchone()
+        warn = c.execute("select message from public.harness_events where run_id=%s and level='warning' and message like 'Gemini%%'",
+                         (r["run_id"],)).fetchone()
+    assert ex["status"] == "succeeded" and "caracteres no válidos" in ex["output"]["llm_error"]
+    assert warn is not None
