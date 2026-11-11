@@ -57,6 +57,12 @@ def dev_token(body: DevTokenIn) -> dict[str, str]:
     return {"access_token": issue_dev_token(uid, email), "user_id": uid, "email": email, "role": role}
 
 
+@router.get("/auth/config")
+def auth_config_endpoint() -> dict[str, Any]:
+    from ..auth import auth_config
+    return auth_config()
+
+
 @router.get("/me")
 def me(p: Principal = Depends(get_principal)) -> dict[str, Any]:
     return {"user_id": p.user_id, "role": p.role, "email": (p.claims or {}).get("email")}

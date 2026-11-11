@@ -1,6 +1,7 @@
 """Verificación de identidad (Supabase Auth) y dependencias de autorización."""
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -12,6 +13,7 @@ from .config import Settings, get_settings
 from .db import service_tx
 
 _jwks_client: jwt.PyJWKClient | None = None
+log = logging.getLogger("cdd.auth")
 
 
 @dataclass(frozen=True)
@@ -75,7 +77,32 @@ def decode_token(token: str) -> dict[str, Any]:
                 return claims
         except jwt.PyJWTError as e:
             errors.append(f"dev: {e}")
-    raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido")
+    if not (s.supabase_jwks_url or s.supabase_jwt_secret):
+        errors.append("la API no tiene CDD_SUPABASE_JWKS_URL ni CDD_SUPABASE_JWT_SECRET")
+    try:
+        alg = jwt.get_unverified_header(token).get("alg")
+    except jwt.PyJWTError:
+        alg = "?"
+    detail = f"Token inválido (alg {alg}): " + "; ".join(errors)
+    if alg == "HS256" and not s.supabase_jwt_secret:
+        detail += (". Tu proyecto de Supabase firma con el secreto JWT clásico: añade CDD_SUPABASE_JWT_SECRET "
+                   "(Supabase → Project Settings → JWT Keys → Legacy JWT secret) en el entorno de la API")
+    log.warning(detail)
+    raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail)
+
+
+def auth_config() -> dict[str, Any]:
+    """Diagnóstico público (sin secretos) de cómo verifica la API los tokens de Supabase."""
+    s = get_settings()
+    out: dict[str, Any] = {"jwks_url": s.supabase_jwks_url or None, "hs256_secret_configured": bool(s.supabase_jwt_secret)}
+    if s.supabase_jwks_url:
+        try:
+            import httpx
+            keys = httpx.get(s.supabase_jwks_url, timeout=8).json().get("keys", [])
+            out["jwks_keys"] = [{"kid": k.get("kid"), "alg": k.get("alg"), "kty": k.get("kty")} for k in keys]
+        except Exception as e:  # noqa: BLE001
+            out["jwks_error"] = f"{type(e).__name__}: {e}"
+    return out
 
 
 def lookup_role(user_id: str) -> str:

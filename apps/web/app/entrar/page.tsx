@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 // Traduce los mensajes de Supabase Auth y explica qué hacer
 function explain(raw: string): string {
   const m = raw.toLowerCase();
+  if (m.includes("rechazó la sesión")) return raw;
   if (m.includes("invalid login credentials"))
     return "Correo o contraseña incorrectos, o la cuenta todavía no existe. Si es tu primera vez, usa la pestaña «Soy nuevo».";
   if (m.includes("email not confirmed"))

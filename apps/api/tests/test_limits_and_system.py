@@ -57,3 +57,22 @@ def test_list_settings_accept_plain_text_and_json(monkeypatch):
     s = Settings(_env_file=None)
     assert s.cors_origins == ["https://ciencia-y-dios.vercel.app", "http://localhost:3000"]
     assert s.connectors_enabled == ["openalex", "arxiv"]
+
+
+def test_rejected_token_explains_why(monkeypatch):
+    """Si Supabase firma con el secreto clásico (HS256) y la API solo tiene JWKS, el 401 dice qué variable falta."""
+    import jwt as pyjwt
+    import pytest
+    from fastapi import HTTPException
+
+    from cdd import auth
+    from cdd.config import get_settings
+    s = get_settings()
+    monkeypatch.setattr(s, "supabase_jwt_secret", "")
+    monkeypatch.setattr(s, "dev_auth", False)
+    token = pyjwt.encode({"sub": "x", "aud": "authenticated"}, "otro-secreto-de-al-menos-32-caracteres!!", algorithm="HS256")
+    with pytest.raises(HTTPException) as e:
+        auth.decode_token(token)
+    assert e.value.status_code == 401
+    assert "CDD_SUPABASE_JWT_SECRET" in e.value.detail and "HS256" in e.value.detail
+    assert "jwks_url" in auth.auth_config()

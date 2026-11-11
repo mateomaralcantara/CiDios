@@ -77,8 +77,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     signInPassword: async (email, password) => {
       if (!supabase) throw new Error("Supabase no está configurado");
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      // Supabase aceptó la contraseña; ahora la API tiene que aceptar el token. Si no, se explica por qué.
+      try {
+        const me = await api<{ user_id: string | null; role: string; email: string | null }>("/v1/me", { token: data.session.access_token });
+        if (!me.user_id) throw new Error("la API no reconoce el usuario");
+        setSession({ token: data.session.access_token, userId: me.user_id, email: me.email, role: me.role });
+      } catch (e) {
+        await supabase.auth.signOut();
+        throw new Error(`Supabase aceptó tu contraseña, pero la API rechazó la sesión: ${(e as Error).message}`);
+      }
     },
     signUp: async (email, password) => {
       if (!supabase) throw new Error("Supabase no está configurado");
