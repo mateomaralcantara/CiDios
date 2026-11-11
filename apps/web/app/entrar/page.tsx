@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 
 // Traduce los mensajes de Supabase Auth y explica qué hacer
@@ -17,13 +17,19 @@ function explain(raw: string): string {
     return "El servicio de correo de Supabase solo envía a miembros del equipo del proyecto. Crea el usuario en Supabase (Authentication → Users → Add user → «Auto Confirm User») o configura un SMTP propio.";
   if (m.includes("signups not allowed") || m.includes("signup is disabled"))
     return "El registro está desactivado en Supabase (Authentication → Sign In / Providers → «Allow new users to sign up»).";
+  if (m.includes("expired") || m.includes("invalid") && m.includes("link"))
+    return "El enlace del correo ha caducado o ya se usó. Pide otro con «¿Olvidaste tu contraseña?» o «Reenviar confirmación».";
+  if (m.includes("same") && m.includes("password"))
+    return "La contraseña nueva debe ser distinta de la anterior.";
+  if (m.includes("error sending") || m.includes("smtp"))
+    return "Supabase no pudo enviar el correo. Revisa Authentication → Emails (SMTP) o usa en tu PC: python -m cdd.cuenta tu@correo --contrasena";
   if (m.includes("password") && (m.includes("least") || m.includes("short") || m.includes("weak")))
     return "La contraseña no cumple los requisitos de Supabase (usa al menos 8 caracteres, con letras y números).";
   return raw;
 }
 
 export default function Entrar() {
-  const { signInDev, signInPassword, signUp, resendConfirmation, resetPassword, supabase, devAuth } = useAuth();
+  const { signInDev, signInPassword, signUp, resendConfirmation, resetPassword, supabase, devAuth, recovery, updatePassword, linkError } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +37,13 @@ export default function Entrar() {
   const [msg, setMsg] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  useEffect(() => { if (linkError) setMsg({ kind: "error", text: explain(linkError) }); }, [linkError]);
+
+  // Los botones de correo necesitan el correo escrito arriba: si falta, se dice en vez de no hacer nada
+  const withEmail = (fn: () => Promise<void>) => () => {
+    if (!email.includes("@")) { setMsg({ kind: "error", text: "Escribe primero tu correo electrónico en el campo de arriba." }); return; }
+    run(fn);
+  };
 
   const run = async (fn: () => Promise<void>) => {
     setMsg(null); setBusy(true);
@@ -49,6 +62,23 @@ export default function Entrar() {
     setMsg({ kind: "ok", text: `Cuenta creada. Te enviamos un correo a ${email}: abre el enlace para confirmarla y después entra aquí. Revisa también spam.` });
     setMode("login");
   });
+
+  if (recovery) return (
+    <div className="mx-auto max-w-lg">
+      <h1>Nueva contraseña</h1>
+      <p className="muted mt-2 text-lg">Escribe la contraseña que quieres usar a partir de ahora.</p>
+      <form className="ui card mt-5 space-y-5 p-6 text-left sm:p-8" data-testid="recovery-form"
+        onSubmit={(e) => { e.preventDefault(); run(async () => { await updatePassword(password); router.push("/investigar"); }); }}>
+        <label className="block text-base">Contraseña nueva <span className="muted font-normal">(mínimo 8 caracteres)</span>
+          <input className="input mt-2" type={show ? "text" : "password"} autoComplete="new-password" required minLength={8}
+            value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
+        <label className="muted flex cursor-pointer items-center gap-2 text-sm"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Mostrar contraseña</label>
+        <button className="btn btn-primary w-full py-3 text-lg" disabled={busy}>{busy ? "Guardando…" : "Guardar y entrar"}</button>
+        {msg && <p role="alert" className={`text-base ${msg.kind === "error" ? "text-rose-700" : "text-emerald-700"}`}>{msg.text}</p>}
+      </form>
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-lg">
@@ -84,11 +114,11 @@ export default function Entrar() {
             </button>
             {mode === "login" && (
               <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 border-t pt-4 text-sm" style={{ borderColor: "var(--line)" }}>
-                <button type="button" className="underline" disabled={!email || busy}
-                  onClick={() => run(async () => { await resendConfirmation(email); setMsg({ kind: "ok", text: `Correo de confirmación reenviado a ${email}.` }); })}>
+                <button type="button" className="underline" disabled={busy} data-testid="resend"
+                  onClick={withEmail(async () => { await resendConfirmation(email); setMsg({ kind: "ok", text: `Correo de confirmación reenviado a ${email}.` }); })}>
                   Reenviar confirmación</button>
-                <button type="button" className="underline" disabled={!email || busy}
-                  onClick={() => run(async () => { await resetPassword(email); setMsg({ kind: "ok", text: `Si existe una cuenta con ${email}, te enviamos un enlace para cambiar la contraseña.` }); })}>
+                <button type="button" className="underline" disabled={busy} data-testid="forgot"
+                  onClick={withEmail(async () => { await resetPassword(email); setMsg({ kind: "ok", text: `Si existe una cuenta con ${email}, te enviamos un enlace para cambiar la contraseña.` }); })}>
                   ¿Olvidaste tu contraseña?</button>
               </div>
             )}

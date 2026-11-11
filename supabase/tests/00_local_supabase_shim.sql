@@ -16,6 +16,11 @@ create table if not exists auth.users (
   raw_user_meta_data jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
+-- Columnas de Supabase Auth que usa cdd.cuenta (confirmar correo y cambiar contraseña sin enviar emails)
+alter table auth.users add column if not exists encrypted_password text;
+alter table auth.users add column if not exists email_confirmed_at timestamptz;
+create schema if not exists extensions;
+create extension if not exists pgcrypto with schema extensions;
 create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(coalesce(current_setting('request.jwt.claim.sub', true),
          (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')), '')::uuid

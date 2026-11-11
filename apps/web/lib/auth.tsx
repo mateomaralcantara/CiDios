@@ -12,6 +12,11 @@ interface AuthCtx {
   signUp: (email: string, password: string) => Promise<"logged_in" | "confirm_email" | "already_registered">;
   resendConfirmation: (email: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  /** true al volver del enlace «¿Olvidaste tu contraseña?»: hay que pedir la contraseña nueva */
+  recovery: boolean;
+  updatePassword: (password: string) => Promise<void>;
+  /** Error que Supabase devuelve en la URL del enlace del correo (p. ej. enlace caducado) */
+  linkError: string | null;
   signOut: () => Promise<void>;
 }
 
@@ -21,11 +26,16 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 // Clave pública del proyecto: «publishable key» (sb_publishable_…) o la «anon key» clásica. NUNCA la secret/service_role.
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const DEV_AUTH = process.env.NEXT_PUBLIC_DEV_AUTH === "true";
+// Se lee al cargar el módulo, antes de que supabase-js procese y borre los parámetros del enlace del correo
+const INITIAL_URL = typeof window !== "undefined" ? `${window.location.search}&${window.location.hash.replace(/^#/, "")}` : "";
+const URL_PARAMS = new URLSearchParams(INITIAL_URL.replace(/^\?/, ""));
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = useMemo(() => (SUPABASE_URL && SUPABASE_ANON ? createClient(SUPABASE_URL, SUPABASE_ANON) : null), []);
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
+  const [recovery, setRecovery] = useState(URL_PARAMS.get("type") === "recovery");
+  const linkError = URL_PARAMS.get("error_description");
 
   const fromToken = useCallback(async (token: string): Promise<Session | null> => {
     try {
@@ -37,9 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       if (supabase) {
+        // Suscribirse ANTES de getSession: el evento PASSWORD_RECOVERY se emite al procesar el enlace del correo
+        supabase.auth.onAuthStateChange((event, s) => {
+          if (event === "PASSWORD_RECOVERY") setRecovery(true);
+          setTimeout(async () => setSession(s ? await fromToken(s.access_token) : null), 0);
+        });
         const { data } = await supabase.auth.getSession();
         if (data.session) setSession(await fromToken(data.session.access_token));
-        supabase.auth.onAuthStateChange(async (_e, s) => setSession(s ? await fromToken(s.access_token) : null));
       } else if (DEV_AUTH) {
         const raw = localStorage.getItem(KEY);
         if (raw) setSession(await fromToken(raw));
@@ -49,7 +63,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase, fromToken]);
 
   const value: AuthCtx = {
-    session, ready, supabase, devAuth: DEV_AUTH,
+    session, ready, supabase, devAuth: DEV_AUTH, recovery, linkError,
+    updatePassword: async (password) => {
+      if (!supabase) throw new Error("Supabase no está configurado");
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      setRecovery(false);
+    },
     signInDev: async (who) => {
       const r = await api<{ access_token: string }>("/v1/auth/dev-token", { body: { user: who } });
       localStorage.setItem(KEY, r.access_token);

@@ -85,3 +85,23 @@ def test_imports_work_inside_render_container(tmp_path):
     r = subprocess.run([sys.executable, "-c", code], cwd=app, env=env, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr[-800:]
     assert "ok /corpus" in r.stdout
+
+
+def test_cuenta_confirms_and_sets_password_without_email():
+    """cdd.cuenta confirma el correo y guarda una contraseña bcrypt (formato de Supabase Auth) sin enviar correos."""
+    from cdd import cuenta
+    from cdd.db import service_tx
+    from cdd.seed import DEV_USERS
+    email = DEV_USERS["user2"][1]
+    with service_tx() as conn:
+        conn.execute("update auth.users set email_confirmed_at = null, encrypted_password = null where email = %s", (email,))
+        assert cuenta.status(conn, email)["email_confirmed_at"] is None
+        cuenta.confirm(conn, email)
+        cuenta.set_password(conn, email, "Clave-nueva-123")
+        s = cuenta.status(conn, email)
+        assert s["email_confirmed_at"] is not None and s["has_password"]
+        h = conn.execute("select encrypted_password from auth.users where email = %s", (email,)).fetchone()["encrypted_password"]
+        assert h.startswith("$2")   # bcrypt, el formato que verifica GoTrue
+        ok = conn.execute("select extensions.crypt('Clave-nueva-123', %s) = %s as ok", (h, h)).fetchone()["ok"]
+        assert ok
+        assert cuenta.status(conn, "nadie@ejemplo.org") is None
