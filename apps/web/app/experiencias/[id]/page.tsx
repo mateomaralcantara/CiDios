@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Chronosphere } from "@/components/Chronosphere";
 import { CategoryChip } from "@/components/ClaimCard";
 import { IllustrationFigure } from "@/components/Illustration";
 import { SchematicMap } from "@/components/SchematicMap";
@@ -145,6 +146,7 @@ export default function ExperiencePage() {
   const gamified = !!spec?.gamified && !academic;
   const unlocked = gamified ? (progress?.unlocked_stage ?? 0) : Infinity;
   const stage = spec?.stages[stageIdx];
+  const titles = useMemo(() => new Map((spec?.events ?? []).map((e) => [e.claim_id, e.title])), [spec]);
   const stageEvents = useMemo(() => (spec?.events ?? []).filter((e) => e.stage_id === stage?.id), [spec, stage]);
 
   const speak = useCallback((claimId: string) => {
@@ -205,6 +207,11 @@ export default function ExperiencePage() {
             {!session && <> · <Link className="underline" href="/entrar">entra</Link> para guardar tu progreso</>}</span>)}
       </div>
       <ul className="ui muted mt-3 list-disc pl-5 text-xs">{spec.notices.map((n) => <li key={n}>{n}</li>)}</ul>
+
+      <section className="mt-8" aria-label="Cronosfera">
+        <Chronosphere packet={packet} titles={titles} />
+      </section>
+      <h2 className="mt-12 text-2xl">Recorrido por etapas</h2>
 
       <nav className="ui mt-6 flex flex-wrap justify-center gap-2 pb-2" aria-label="Etapas">
         {spec.stages.map((s, i) => {

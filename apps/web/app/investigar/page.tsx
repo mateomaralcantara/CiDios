@@ -2,10 +2,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api, formatDate, formatUsd } from "@/lib/api";
+import { api, formatDate } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 const EXAMPLE = "Investiga la historia de la transmisión de los textos bíblicos desde sus testimonios antiguos hasta las ediciones modernas. Muéstrame las evidencias arqueológicas y textuales, las posiciones académicas relevantes, las dataciones conocidas y las incertidumbres. Convierte la investigación en una línea de tiempo ilustrada y gamificada, con mapas, fuentes consultables, misiones pedagógicas, preguntas interactivas y narración opcional";
+
+const STATE_LABEL: Record<string, string> = {
+  READY: "Lista", PUBLISHED: "Publicada", FAILED: "No completada", CANCELLED: "Cancelada", PARTIAL: "Sin evidencia",
+  PAUSED: "En pausa", AWAITING_APPROVAL: "Esperando aprobación", BUDGET_EXHAUSTED: "Detenida",
+};
 
 interface Inv { id: string; prompt: string; status: string; created_at: string; run_id: string; state: string; spent_usd: string; result: { experience_id?: string } }
 
@@ -23,7 +28,7 @@ export default function Investigar() {
   return (
     <div>
       <h1 className="text-3xl font-bold">Nueva investigación</h1>
-      <p className="muted mt-2 max-w-3xl">El HARNESS interpreta tu intención, planifica un DAG de tareas, recupera evidencias, las contrasta, verifica cada cita y compila una experiencia. Todo queda registrado y auditable.</p>
+      <p className="muted mt-2 max-w-3xl">Haz una pregunta. Buscaremos en textos publicados y en la obra de los expertos del área, contrastaremos las posturas, comprobaremos cada cita palabra por palabra y lo convertiremos en una línea de tiempo que puedes explorar.</p>
       <form className="ui card mt-6 space-y-3 p-5" onSubmit={async (e) => {
         e.preventDefault(); setErr(null); setBusy(true);
         try {
@@ -50,10 +55,10 @@ export default function Investigar() {
       <h2 className="mb-3 mt-10 text-2xl font-semibold">Mis investigaciones</h2>
       <div className="ui space-y-2">{list.map((i) => (
         <div key={i.id} className="card flex flex-wrap items-center gap-3 p-3 text-sm">
-          <span className="chip bg-stone-100 dark:bg-stone-800">{i.state === "PARTIAL" ? "SIN EVIDENCIA" : i.state}</span>
+          <span className="chip bg-stone-100 dark:bg-stone-800">{STATE_LABEL[i.state] ?? "Investigando…"}</span>
           <span className="flex-1 truncate" title={i.prompt}>{i.prompt}</span>
-          <span className="muted">{formatUsd(i.spent_usd)} · {formatDate(i.created_at)}</span>
-          <Link className="underline" href={`/ejecuciones/${i.run_id}`}>Ejecución</Link>
+          <span className="muted">{formatDate(i.created_at)}</span>
+          <Link className="underline" href={`/ejecuciones/${i.run_id}`}>Ver investigación</Link>
           {i.result?.experience_id && <Link className="accent underline" href={`/experiencias/${i.result.experience_id}`}>Experiencia</Link>}
         </div>))}</div>
     </div>
