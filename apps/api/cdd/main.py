@@ -22,6 +22,7 @@ STARTED_AT = time.time()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     s = get_settings()
+    logging.getLogger("cdd").info("CORS permitido para: %s", ", ".join(s.cors_origins) or "(ninguno)")
     check_connection()   # si falla, la API no arranca y explica por qué
     get_pool()
     worker = None

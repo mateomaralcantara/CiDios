@@ -9,8 +9,9 @@ interface Topic { slug: string; title: string; summary: string; content_status: 
 export default function Home() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [q, setQ] = useState("");
+  const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
-  useEffect(() => { api<Topic[]>("/v1/topics").then(setTopics).catch(() => setTopics([])); }, []);
+  useEffect(() => { api<Topic[]>("/v1/topics").then(setTopics).catch((e) => { setTopics([]); setErr((e as Error).message); }); }, []);
   return (
     <div>
       <section className="pb-8 pt-2 text-center sm:pb-12 sm:pt-4">
@@ -29,6 +30,7 @@ export default function Home() {
         <div className="mt-5"><Link href="/investigar" className="ui accent text-lg font-semibold underline">o lanza una investigación con el HARNESS →</Link></div>
       </section>
       <h2 className="mb-6 text-center">Áreas de estudio</h2>
+      {err && <p role="alert" className="ui card mx-auto mb-6 max-w-3xl p-4 text-center text-base text-rose-700" data-testid="api-error">{err}</p>}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {topics.map((t) => (
           <Link key={t.slug} href={`/areas/${t.slug}`} className="card block p-6 text-center" data-testid="topic-card">
