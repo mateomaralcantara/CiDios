@@ -3,7 +3,8 @@
 // · Escala elástica: el orden temporal se respeta, pero los siglos vacíos se comprimen y las épocas densas se abren.
 // · Halo de incertidumbre: la anchura del halo sobre el eje es el intervalo real de la datación (lo que NO sabemos).
 // · Orbes por categoría epistémica, del tamaño de su respaldo documental.
-// · Pasar el ratón despliega el dato; hacer clic abre la lente con citas literales, fuentes y posturas.
+// · Pasar el ratón despliega en la propia tarjeta TODO lo que se sabe (con barra lateral para subir y bajar);
+//   hacer clic abre la lente grande con citas literales, fuentes y posturas.
 // Solo lee el KnowledgePacket: nunca altera afirmaciones.
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -26,9 +27,10 @@ interface Item { c: PacketClaim; title: string; start: number; end: number; x: n
 const PAD = 190;          // margen a cada lado del eje
 const MIN_GAP = 150;      // separación mínima entre hechos consecutivos (px)
 const STRETCH = 46;       // cuánto «pesa» el tiempo transcurrido (logarítmico)
-const HEIGHT = 660;
+const HEIGHT = 840;          // alto suficiente para que la tarjeta desplegada quepa entera
 const STEM = 62;          // tallo entre el eje y la tarjeta
 const AXIS = HEIGHT / 2;
+const CARD_MAX = AXIS - STEM - 14;   // alto máximo de una tarjeta desplegada
 
 function layout(claims: PacketClaim[], titles: Map<string, string>): { items: Item[]; width: number } {
   const dated = claims
@@ -60,6 +62,103 @@ function layout(claims: PacketClaim[], titles: Map<string, string>): { items: It
   }));
   const width = (items.length ? Math.max(...items.map((i) => i.x2)) : PAD) + PAD;
   return { items, width };
+}
+
+// Barra lateral propia de la tarjeta: ▲ ▼, pista clicable y asa arrastrable (también funciona la rueda del ratón)
+function ScrollRail({ target }: { target: React.RefObject<HTMLDivElement | null> }) {
+  const [m, setM] = useState({ top: 0, size: 1 });
+  const sync = useCallback(() => {
+    const el = target.current;
+    if (!el) return;
+    const size = el.scrollHeight > 0 ? Math.min(1, el.clientHeight / el.scrollHeight) : 1;
+    const top = el.scrollHeight > el.clientHeight ? el.scrollTop / (el.scrollHeight - el.clientHeight) : 0;
+    setM({ top, size });
+  }, [target]);
+  useEffect(() => {
+    const el = target.current;
+    if (!el) return;
+    sync();
+    el.addEventListener("scroll", sync);
+    const ro = new ResizeObserver(sync); ro.observe(el);
+    return () => { el.removeEventListener("scroll", sync); ro.disconnect(); };
+  }, [target, sync]);
+  const by = (dy: number) => target.current?.scrollBy({ top: dy, behavior: "smooth" });
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  if (m.size >= 0.999) return null;
+  return (
+    <div className="cs-rail" onPointerDown={stop} onClick={stop}>
+      <button type="button" className="cs-rail-btn" aria-label="Subir" onClick={() => by(-140)}>▲</button>
+      <div className="cs-rail-track" onPointerDown={(e) => {
+        const el = target.current; if (!el) return;
+        const r = e.currentTarget.getBoundingClientRect();
+        el.scrollTo({ top: ((e.clientY - r.top) / r.height) * el.scrollHeight - el.clientHeight / 2, behavior: "smooth" });
+      }}>
+        <span className="cs-rail-thumb" style={{ height: `${m.size * 100}%`, top: `${m.top * (1 - m.size) * 100}%` }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            const el = target.current, track = e.currentTarget.parentElement; if (!el || !track) return;
+            const y0 = e.clientY, s0 = el.scrollTop, ratio = el.scrollHeight / track.clientHeight;
+            const move = (ev: PointerEvent) => { el.scrollTop = s0 + (ev.clientY - y0) * ratio; };
+            const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+            window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+          }} />
+      </div>
+      <button type="button" className="cs-rail-btn" aria-label="Bajar" onClick={() => by(140)}>▼</button>
+    </div>
+  );
+}
+
+// Tarjeta de la línea de tiempo: compacta en reposo; al pasar el ratón muestra TODO lo que se sabe del hecho
+function EventCard({ it, bib, up, active, onOpen }: { it: Item; bib: Map<number, BibEntry>; up: boolean; active: boolean; onOpen: () => void }) {
+  const c = it.c;
+  const color = colorOf(c.category);
+  const body = useRef<HTMLDivElement>(null);
+  const span = it.end - it.start;
+  return (
+    <div role="button" tabIndex={0} className={`cs-card ${up ? "cs-up" : "cs-down"}`} data-testid="chrono-event" aria-expanded={active}
+      aria-label={`${c.date?.label}: ${it.title}`}
+      style={{ left: it.x - 120, ["--card-max" as string]: `${CARD_MAX}px`, ...(up ? { bottom: HEIGHT - AXIS + STEM } : { top: AXIS + STEM }) }}
+      onClick={onOpen} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
+      onMouseLeave={() => body.current?.scrollTo({ top: 0 })}>
+      <span className="cs-card-date">{c.date?.label}</span>
+      <span className="cs-card-title">{it.title}</span>
+      <div className="cs-card-body">
+        <div ref={body} className="cs-card-scroll" onWheel={(e) => e.stopPropagation()}>
+          <p className="cs-card-statement">{c.statement}</p>
+          <div className="cs-card-more">
+            <dl className="cs-facts">
+              <div><dt>Fecha</dt><dd>{c.date?.label} · {c.date?.precision_label}</dd></div>
+              {span > 0 && <div><dt>Margen</dt><dd>{formatYear(it.start)} – {formatYear(it.end)} ({span.toLocaleString("es")} años)</dd></div>}
+              {c.place?.name && <div><dt>Lugar</dt><dd>{c.place.name}</dd></div>}
+              <div><dt>Tipo</dt><dd>{c.category_label}</dd></div>
+              <div><dt>Disciplina</dt><dd>{c.discipline}</dd></div>
+              <div><dt>Lo sostiene</dt><dd>{c.asserted_by}</dd></div>
+            </dl>
+            {c.consensus_note && <p className="cs-card-note"><strong>Consenso.</strong> {c.consensus_note}</p>}
+            {c.insufficient_evidence_note && <p className="cs-card-note cs-card-warn"><strong>Lo que no sabemos.</strong> {c.insufficient_evidence_note}</p>}
+            {c.future_research_note && <p className="cs-card-note"><strong>Qué podría cambiarlo.</strong> {c.future_research_note}</p>}
+            <p className="cs-card-h">Evidencia literal ({c.evidence.length})</p>
+            {c.evidence.map((e) => {
+              const b = e.citation_key ? bib.get(e.citation_key) : undefined;
+              return (
+                <blockquote key={e.id} className="cs-card-quote">“{e.fragment}”
+                  <span className="cs-card-src">{STANCE_LABEL[e.stance]}{e.citation_key ? ` · [${e.citation_key}]` : ""} ·{" "}
+                    {b ? `${b.authors.slice(0, 2).join(", ")}${b.authors.length > 2 ? " et al." : ""}${b.year ? ` (${b.year})` : ""}. ${b.title}` : e.document.title}
+                    {e.locator ? ` · «${e.locator}»` : ""}</span>
+                </blockquote>);
+            })}
+            {c.perspectives.length > 0 && <p className="cs-card-h">Posturas ({c.perspectives.length})</p>}
+            {c.perspectives.map((p) => (
+              <p key={p.label} className="cs-card-note"><strong>{p.label}</strong> <span className="cs-card-src">({p.tradition}{p.held_by ? `; ${p.held_by}` : ""})</span><br />{p.summary}</p>))}
+            {c.origin === "llm_extracted" && <p className="cs-card-src">Propuesta a partir de citas verificadas · pendiente de revisión</p>}
+            <p className="cs-card-open">Haz clic para verlo en grande →</p>
+          </div>
+        </div>
+        <ScrollRail target={body} />
+      </div>
+      <span className="cs-card-meta"><span className="cs-dot" style={{ background: color }} />{c.category_label} · {it.sources} {it.sources === 1 ? "fuente" : "fuentes"}</span>
+    </div>
+  );
 }
 
 function Lens({ item, bib, onPrev, onNext, onClose, index, total }: {
@@ -243,15 +342,8 @@ export function Chronosphere({ packet, titles }: { packet: KnowledgePacket; titl
                       aria-label={`${it.c.date?.label}: ${it.title}`} tabIndex={-1}
                       onClick={() => { if (!drag.current?.moved) { setPlaying(false); focus(i); } }} />
                     <span className="cs-tick" style={{ left: it.x, top: up ? AXIS + 20 : AXIS - 38 }}>{it.c.date?.label}</span>
-                    <button className={`cs-card ${up ? "cs-up" : "cs-down"}`} data-testid="chrono-event"
-                      style={{ left: it.x - 120, ...(up ? { bottom: HEIGHT - AXIS + STEM } : { top: AXIS + STEM }) }}
-                      onClick={() => { if (!drag.current?.moved) { setPlaying(false); focus(i); } }}
-                      aria-expanded={sel === i}>
-                      <span className="cs-card-date">{it.c.date?.label}</span>
-                      <span className="cs-card-title">{it.title}</span>
-                      <span className="cs-card-peek">{it.c.statement}</span>
-                      <span className="cs-card-meta"><span className="cs-dot" style={{ background: color }} />{it.c.category_label} · {it.sources} {it.sources === 1 ? "fuente" : "fuentes"}</span>
-                    </button>
+                    <EventCard it={it} bib={bib} up={up} active={sel === i}
+                      onOpen={() => { if (!drag.current?.moved) { setPlaying(false); focus(i); } }} />
                   </div>);
               })}
             </div>
